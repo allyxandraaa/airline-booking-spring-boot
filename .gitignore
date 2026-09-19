@@ -1,0 +1,19 @@
+.env
+.env.local
+*/.env
+*/.env.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+logs/

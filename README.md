@@ -33,3 +33,9 @@ cd flight-service
 
 Аналогічно для `booking-service`, `customer-service`, `payment-service`, `overbooking-service`.
 
+## Команда
+
+- Малій Олександра Михайлівна
+- Говорищева Вероніка Максимівна
+- Давиденко Георгій Андрійович
+

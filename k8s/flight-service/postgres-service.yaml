@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-flight
+spec:
+  clusterIP: None
+  selector:
+    app: postgres-flight
+  ports:
+    - port: 5432
+      targetPort: 5432

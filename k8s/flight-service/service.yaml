@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flight-service
+spec:
+  type: ClusterIP
+  selector:
+    app: flight-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081

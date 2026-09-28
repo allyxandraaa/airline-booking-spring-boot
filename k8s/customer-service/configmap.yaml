@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customer-service-config
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SERVER_PORT: "8085"
+  DB_URL: "jdbc:postgresql://postgres-customer:5432/customer_db"
+  DB_USER: "postgres"

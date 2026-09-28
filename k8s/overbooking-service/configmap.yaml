@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: overbooking-service-config
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SERVER_PORT: "8084"
+  DB_URL: "jdbc:postgresql://postgres-overbooking:5432/overbooking_db"
+  DB_USER: "postgres"

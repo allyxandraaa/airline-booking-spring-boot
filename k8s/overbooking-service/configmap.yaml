@@ -7,3 +7,5 @@ data:
   SERVER_PORT: "8084"
   DB_URL: "jdbc:postgresql://postgres-overbooking:5432/overbooking_db"
   DB_USER: "postgres"
+  BOOKING_SERVICE_URL: "http://booking-service:8082"
+  PAYMENT_SERVICE_URL: "http://payment-service:8083"

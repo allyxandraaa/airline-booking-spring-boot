@@ -1,5 +1,6 @@
-package com.example.overbooking_service.compensation;
+package com.example.overbooking_service.compensation.internal;
 
+import com.example.overbooking_service.compensation.CompensationResult;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

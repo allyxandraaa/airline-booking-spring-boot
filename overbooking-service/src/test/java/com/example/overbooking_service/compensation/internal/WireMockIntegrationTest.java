@@ -1,4 +1,4 @@
-package com.example.overbooking_service.compensation;
+package com.example.overbooking_service.compensation.internal;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;

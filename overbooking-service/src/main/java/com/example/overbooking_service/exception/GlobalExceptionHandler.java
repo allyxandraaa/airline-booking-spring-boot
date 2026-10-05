@@ -49,6 +49,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				"Зовнішній сервіс відхилив запит");
 	}
 
+	@ExceptionHandler(BookingsNotFoundException.class)
+	public ProblemDetail handleBookingsNotFound(BookingsNotFoundException ex) {
+		return problem(HttpStatus.NOT_FOUND, "Не знайдено", ex.getMessage());
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleUnexpected(Exception ex) {
 		log.error("Unhandled exception", ex);

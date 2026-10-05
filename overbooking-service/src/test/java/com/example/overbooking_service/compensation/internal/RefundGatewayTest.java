@@ -1,5 +1,6 @@
-package com.example.overbooking_service.compensation;
+package com.example.overbooking_service.compensation.internal;
 
+import com.example.overbooking_service.compensation.CompensationResult;
 import com.example.overbooking_service.client.PaymentClient;
 import com.example.overbooking_service.client.dto.RefundRequest;
 import com.example.overbooking_service.client.dto.RefundResponse;

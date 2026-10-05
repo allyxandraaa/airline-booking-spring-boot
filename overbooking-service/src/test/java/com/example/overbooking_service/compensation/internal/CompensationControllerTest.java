@@ -1,4 +1,4 @@
-package com.example.overbooking_service.compensation;
+package com.example.overbooking_service.compensation.internal;
 
 import com.example.overbooking_service.client.BookingClient;
 import com.example.overbooking_service.client.PaymentClient;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CompensationController.class)
-@Import({CompensationService.class, RefundGateway.class})
+@Import({CompensationServiceImpl.class, RefundGatewayImpl.class})
 class CompensationControllerTest {
 
 	@Autowired

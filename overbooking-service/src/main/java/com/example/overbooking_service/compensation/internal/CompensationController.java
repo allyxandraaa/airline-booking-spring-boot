@@ -1,5 +1,8 @@
-package com.example.overbooking_service.compensation;
+package com.example.overbooking_service.compensation.internal;
 
+import com.example.overbooking_service.compensation.CompensationRequest;
+import com.example.overbooking_service.compensation.CompensationResult;
+import com.example.overbooking_service.compensation.CompensationService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

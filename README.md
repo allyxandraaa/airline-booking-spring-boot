@@ -12,6 +12,8 @@
 
 Опис розгортання системи в Kubernetes — у [`docs/KUBERNETES_REPORT.md`](./docs/KUBERNETES_REPORT.md).
 
+Контракт подій, якими обмінюються `booking-service` і `payment-service` через Kafka, — у [`docs/EVENT_CONTRACT.md`](./docs/EVENT_CONTRACT.md).
+
 ## Сервіси
 
 Кожен сервіс — окремий, повністю самостійний застосунок зі своєю базою даних; спільної збірки чи спільної схеми між сервісами немає.

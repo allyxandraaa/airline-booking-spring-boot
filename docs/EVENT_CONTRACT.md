@@ -9,9 +9,9 @@
 ```
 booking-service                                   payment-service
   PENDING → ціна → резервація → SEAT_RESERVED
-  ── PaymentRequestedEvent ──(booking-events)──▶   списання (SUCCESS / DECLINED)
+  ── BookingReservedEvent ──(booking-events)──▶   списання (SUCCESS / DECLINED)
                                                    збій після ретраїв → DLT → статус FAILED
-  ◀── PaymentResultEvent ────(payment-events)──
+  ◀── PaymentProcessedEvent ────(payment-events)──
   SUCCESS            → CONFIRMED
   DECLINED / FAILED  → звільнити місце (release-seat) → FAILED
 ```
@@ -22,21 +22,21 @@ booking-service                                   payment-service
 
 | Параметр | `booking-events` | `payment-events` |
 |---|---|---|
-| Призначення | запит на оплату | результат оплати |
+| Призначення | факт: місце зарезервоване, бронювання готове до оплати | факт: оплату оброблено |
 | Продюсер / власник топіка | `booking-service` (`KafkaTopicConfig`) | `payment-service` (`KafkaTopicConfig`) |
 | Споживач | `payment-service` | `booking-service` |
 | Партиції / репліки | 3 / 1 | 3 / 1 |
 | Ключ повідомлення | `bookingId` (UUID як `String`) | `bookingId` (UUID як `String`) |
-| Значення | JSON, `PaymentRequestedEvent` | JSON, `PaymentResultEvent` |
+| Значення | JSON, `BookingReservedEvent` | JSON, `PaymentProcessedEvent` |
 | Група споживача | `payment-service-group` | `booking-service-group` |
 | Retry-топіки | `booking-events-retry-1000`, `booking-events-retry-2000` | `payment-events-retry-1000`, `payment-events-retry-2000` |
 | Dead Letter Topic | `booking-events-dlt` | `payment-events-dlt` |
 
 Retry-топіки й DLT створює `@RetryableTopic` у споживача. Заголовок `X-Correlation-Id` (необов'язковий) продюсер додає, якщо він є в MDC. Споживач топіка лише підписується на нього й не оголошує його.
 
-## `PaymentRequestedEvent` (`booking-events`)
+## `BookingReservedEvent` (`booking-events`)
 
-Крок 6 сценарію 1: запит на списання коштів. Публікується, коли ціна зафіксована, а місце зарезервоване (статус `SEAT_RESERVED`).
+Факт у домені бронювання: ціна зафіксована, місце зарезервоване (статус `SEAT_RESERVED`). `payment-service` реагує на нього списанням коштів (крок 6 сценарію 1).
 
 ```json
 {
@@ -56,9 +56,9 @@ Retry-топіки й DLT створює `@RetryableTopic` у споживача
 | `amount` | decimal | Сума до списання, `> 0`; дорівнює `priceAtBooking` |
 | `occurredAt` | ISO-8601, UTC | Момент створення події |
 
-## `PaymentResultEvent` (`payment-events`)
+## `PaymentProcessedEvent` (`payment-events`)
 
-Результат оплати для SAGA-компенсації.
+Факт у домені платежів: запит на оплату оброблено. Використовується для SAGA-компенсації.
 
 ```json
 {
@@ -84,7 +84,7 @@ Retry-топіки й DLT створює `@RetryableTopic` у споживача
 
 ## Правила
 
-- **Обов'язковість полів:** усі поля обов'язкові, крім `paymentId` і `reason` в `PaymentResultEvent`. Record перевіряє це в компактному конструкторі.
+- **Обов'язковість полів:** усі поля обов'язкові, крім `paymentId` і `reason` в `PaymentProcessedEvent`. Record перевіряє це в компактному конструкторі.
 - **Еволюція схеми:** додаємо лише необов'язкові поля; наявні не перейменовуємо й не видаляємо.
 - **Класи в різних пакетах:** кожен record дубльований у двох сервісах (`com.example.booking_service.booking` і `com.example.payment_service.payment`), спільного модуля немає. Тому type-заголовки Spring Kafka вимкнені:
   - продюсер: `spring.kafka.producer.properties.spring.json.add.type.headers=false`;

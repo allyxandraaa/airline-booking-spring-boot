@@ -1,11 +1,11 @@
-package com.example.booking_service.booking;
+package com.example.payment_service.payment;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record PaymentRequestedEvent(
+public record BookingReservedEvent(
 		UUID eventId,
 		UUID bookingId,
 		UUID paymentMethodId,
@@ -13,7 +13,7 @@ public record PaymentRequestedEvent(
 		Instant occurredAt
 ) {
 
-	public PaymentRequestedEvent {
+	public BookingReservedEvent {
 		Objects.requireNonNull(eventId, "eventId must not be null");
 		Objects.requireNonNull(bookingId, "bookingId must not be null");
 		Objects.requireNonNull(paymentMethodId, "paymentMethodId must not be null");
@@ -24,7 +24,7 @@ public record PaymentRequestedEvent(
 		}
 	}
 
-	public static PaymentRequestedEvent now(UUID bookingId, UUID paymentMethodId, BigDecimal amount) {
-		return new PaymentRequestedEvent(UUID.randomUUID(), bookingId, paymentMethodId, amount, Instant.now());
+	public static BookingReservedEvent now(UUID bookingId, UUID paymentMethodId, BigDecimal amount) {
+		return new BookingReservedEvent(UUID.randomUUID(), bookingId, paymentMethodId, amount, Instant.now());
 	}
 }

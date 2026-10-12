@@ -25,4 +25,4 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew build ${{ matrix.service != 'overbooking-service' && '-x test' || '' }}
+          ./gradlew build ${{ !contains('overbooking-service payment-service', matrix.service) && '-x test' || '' }}

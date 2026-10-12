@@ -14,13 +14,13 @@ public record BookingReservedEvent(
 ) {
 
 	public BookingReservedEvent {
-		Objects.requireNonNull(eventId, "eventId must not be null");
-		Objects.requireNonNull(bookingId, "bookingId must not be null");
-		Objects.requireNonNull(paymentMethodId, "paymentMethodId must not be null");
-		Objects.requireNonNull(amount, "amount must not be null");
-		Objects.requireNonNull(occurredAt, "occurredAt must not be null");
+		Objects.requireNonNull(eventId, "Поле eventId є обов'язковим");
+		Objects.requireNonNull(bookingId, "Поле bookingId є обов'язковим");
+		Objects.requireNonNull(paymentMethodId, "Поле paymentMethodId є обов'язковим");
+		Objects.requireNonNull(amount, "Поле amount є обов'язковим");
+		Objects.requireNonNull(occurredAt, "Поле occurredAt є обов'язковим");
 		if (amount.signum() <= 0) {
-			throw new IllegalArgumentException("amount must be positive");
+			throw new IllegalArgumentException("Сума має бути більшою за нуль");
 		}
 	}
 

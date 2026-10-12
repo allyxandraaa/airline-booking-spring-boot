@@ -8,8 +8,11 @@ public record BookingDto(
 		UUID id,
 		UUID flightId,
 		UUID passengerId,
+		String passengerName,
+		TicketClass ticketClass,
 		BookingStatus status,
 		BigDecimal priceAtBooking,
+		UUID reservationId,
 		Instant purchaseTime
 ) {
 }

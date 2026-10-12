@@ -1,5 +1,6 @@
 package com.example.booking_service.exception;
 
+import com.example.booking_service.integration.SeatUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			problem.setProperty("timestamp", Instant.now());
 		}
 		return response;
+	}
+
+	@ExceptionHandler(BookingNotFoundException.class)
+	public ProblemDetail handleBookingNotFound(BookingNotFoundException ex) {
+		return problem(HttpStatus.NOT_FOUND, "Бронювання не знайдено", "Бронювання з вказаним ідентифікатором не існує");
+	}
+
+	@ExceptionHandler(SeatUnavailableException.class)
+	public ProblemDetail handleSeatUnavailable(SeatUnavailableException ex) {
+		return problem(HttpStatus.CONFLICT, "Місць немає", "На обраному рейсі немає вільних місць");
+	}
+
+	@ExceptionHandler(BookingProcessingException.class)
+	public ProblemDetail handleBookingProcessing(BookingProcessingException ex) {
+		log.error("Не вдалося обробити бронювання", ex);
+		return problem(HttpStatus.SERVICE_UNAVAILABLE, "Сервіс тимчасово недоступний",
+				"Не вдалося оформити бронювання, спробуйте пізніше");
 	}
 
 	@ExceptionHandler(Exception.class)

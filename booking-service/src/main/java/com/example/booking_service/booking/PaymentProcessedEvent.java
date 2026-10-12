@@ -14,10 +14,10 @@ public record PaymentProcessedEvent(
 ) {
 
 	public PaymentProcessedEvent {
-		Objects.requireNonNull(eventId, "eventId must not be null");
-		Objects.requireNonNull(bookingId, "bookingId must not be null");
-		Objects.requireNonNull(status, "status must not be null");
-		Objects.requireNonNull(occurredAt, "occurredAt must not be null");
+		Objects.requireNonNull(eventId, "Поле eventId є обов'язковим");
+		Objects.requireNonNull(bookingId, "Поле bookingId є обов'язковим");
+		Objects.requireNonNull(status, "Поле status є обов'язковим");
+		Objects.requireNonNull(occurredAt, "Поле occurredAt є обов'язковим");
 	}
 
 	public static PaymentProcessedEvent now(UUID bookingId, UUID paymentId, PaymentProcessedStatus status, String reason) {

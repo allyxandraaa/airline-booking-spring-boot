@@ -25,6 +25,8 @@ class Payment {
 	@Column(nullable = false)
 	private UUID bookingId;
 
+	private UUID paymentMethodId;
+
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal amount;
 
@@ -40,7 +42,12 @@ class Payment {
 	}
 
 	Payment(UUID bookingId, BigDecimal amount, PaymentStatus status, PaymentType type) {
+		this(bookingId, null, amount, status, type);
+	}
+
+	Payment(UUID bookingId, UUID paymentMethodId, BigDecimal amount, PaymentStatus status, PaymentType type) {
 		this.bookingId = bookingId;
+		this.paymentMethodId = paymentMethodId;
 		this.amount = amount;
 		this.status = status;
 		this.type = type;
@@ -52,6 +59,10 @@ class Payment {
 
 	UUID getBookingId() {
 		return bookingId;
+	}
+
+	UUID getPaymentMethodId() {
+		return paymentMethodId;
 	}
 
 	BigDecimal getAmount() {

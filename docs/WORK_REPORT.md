@@ -55,6 +55,13 @@
 
 ## Групове завдання 5
 
+### Малій Олександра Михайлівна
+
+Інфраструктура Kafka, продюсер подій і звіт:
+- #25: Kafka (KRaft) у `docker-compose.yml`, залежності, контракт подій `BookingReservedEvent` і `PaymentProcessedEvent` (`docs/EVENT_CONTRACT.md`), топіки через `NewTopic` і `TopicBuilder`. Автостворення топіків у брокері вимкнено, щоб кількість партицій не залежала від порядку старту сервісів.
+- #26: `POST /api/v1/bookings` і `GET /api/v1/bookings/{id}`, бронювання із заглушками `FlightGateway` і `PassengerGateway`, Transactional Outbox із `PollingOutboxScheduler` та `BookingEventPublisher`, компенсація збоїв самого бронювання (`409`, `503`, `releaseSeat`).
+- #28: звіт `docs/KAFKA_REPORT.md` зі скриншотами: топологія топіків, доказ атомарності запису сутності й події, інтеграційні тести з EmbeddedKafka (перехід у DLT, компенсація), експеримент зі штучною відмовою споживача без дублювання бізнес-ефектів.
+
 ### Говорищева Вероніка Максимівна
 
 Обмін подіями між `booking-service` і `payment-service` через Kafka:

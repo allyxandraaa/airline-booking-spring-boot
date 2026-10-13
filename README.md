@@ -37,6 +37,16 @@ cd flight-service
 
 Аналогічно для `booking-service`, `customer-service`, `payment-service`, `overbooking-service`.
 
+## Kafka
+
+Обмін подіями між `booking-service` і `payment-service` піднімається разом із брокером:
+
+```bash
+docker compose up -d --build kafka postgres-booking postgres-payment booking-service payment-service
+```
+
+Бронювання створюється через `POST http://localhost:8082/api/v1/bookings`, результат оплати видно через `GET http://localhost:8083/api/v1/payments?bookingId=<id>`. Топологія топіків і результати перевірки відмовостійкості описані в [`docs/KAFKA_REPORT.md`](./docs/KAFKA_REPORT.md).
+
 ## Команда
 
 - Малій Олександра Михайлівна

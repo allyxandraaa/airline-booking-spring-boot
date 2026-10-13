@@ -47,7 +47,7 @@ class BookingControllerTest {
 		UUID passengerId = UUID.randomUUID();
 		when(bookingService.findByIds(List.of(id))).thenReturn(List.of(new BookingDto(
 				id, flightId, passengerId, "Ivan Petrenko", TicketClass.ECONOMY, BookingStatus.CONFIRMED,
-				new BigDecimal("120.50"), UUID.randomUUID(), Instant.parse("2026-10-03T10:15:30Z"))));
+				new BigDecimal("120.50"), UUID.randomUUID(), null, Instant.parse("2026-10-03T10:15:30Z"))));
 
 		mockMvc.perform(post("/api/v1/bookings/batch")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +112,7 @@ class BookingControllerTest {
 		UUID reservationId = UUID.randomUUID();
 		when(bookingService.create(any(CreateBookingRequest.class))).thenReturn(new BookingDto(
 				id, flightId, passengerId, "Ivan Petrenko", TicketClass.ECONOMY, BookingStatus.SEAT_RESERVED,
-				new BigDecimal("120.50"), reservationId, Instant.parse("2026-10-03T10:15:30Z")));
+				new BigDecimal("120.50"), reservationId, null, Instant.parse("2026-10-03T10:15:30Z")));
 
 		mockMvc.perform(post("/api/v1/bookings")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +177,7 @@ class BookingControllerTest {
 		UUID id = UUID.randomUUID();
 		when(bookingService.findById(id)).thenReturn(new BookingDto(
 				id, UUID.randomUUID(), UUID.randomUUID(), "Ivan Petrenko", TicketClass.BUSINESS,
-				BookingStatus.PENDING, null, null, Instant.parse("2026-10-03T10:15:30Z")));
+				BookingStatus.PENDING, null, null, null, Instant.parse("2026-10-03T10:15:30Z")));
 
 		mockMvc.perform(get("/api/v1/bookings/{id}", id))
 				.andExpect(status().isOk())

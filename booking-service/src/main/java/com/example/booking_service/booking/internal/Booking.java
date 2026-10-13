@@ -81,6 +81,23 @@ class Booking {
 		this.status = BookingStatus.FAILED;
 	}
 
+	boolean confirm(UUID paymentId) {
+		return finishPayment(BookingStatus.CONFIRMED, paymentId);
+	}
+
+	boolean failPayment(UUID paymentId) {
+		return finishPayment(BookingStatus.FAILED, paymentId);
+	}
+
+	private boolean finishPayment(BookingStatus next, UUID paymentId) {
+		if (status != BookingStatus.SEAT_RESERVED) {
+			return false;
+		}
+		this.status = next;
+		this.paymentId = paymentId;
+		return true;
+	}
+
 	public UUID getId() {
 		return id;
 	}

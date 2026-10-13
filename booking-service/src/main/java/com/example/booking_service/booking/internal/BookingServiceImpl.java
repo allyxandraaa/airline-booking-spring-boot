@@ -137,6 +137,7 @@ class BookingServiceImpl implements BookingService {
 				booking.getStatus(),
 				booking.getPriceAtBooking(),
 				booking.getReservationId(),
+				booking.getPaymentId(),
 				booking.getPurchaseTime());
 	}
 }

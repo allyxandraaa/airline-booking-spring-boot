@@ -13,6 +13,7 @@ public record BookingDto(
 		BookingStatus status,
 		BigDecimal priceAtBooking,
 		UUID reservationId,
+		UUID paymentId,
 		Instant purchaseTime
 ) {
 }

@@ -36,7 +36,7 @@ class PaymentProcessedListener {
 								   @Header(KafkaHeaders.RECEIVED_KEY) String key,
 								   @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
 								   @Header(KafkaHeaders.OFFSET) long offset) {
-		log.info("Received PaymentProcessedEvent key={} partition={} offset={} eventId={} status={}",
+		log.info("Отримано PaymentProcessedEvent key={} partition={} offset={} eventId={} status={}",
 				key, partition, offset, event.eventId(), event.status());
 		paymentResultService.applyPaymentResult(event);
 	}
@@ -47,7 +47,7 @@ class PaymentProcessedListener {
 							 @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
 							 @Header(KafkaHeaders.OFFSET) long offset,
 							 @Header(name = KafkaHeaders.EXCEPTION_MESSAGE, required = false) String reason) {
-		log.error("PaymentProcessedEvent sent to DLT, seat may still be reserved: key={} partition={} offset={} eventId={} reason={}",
+		log.error("PaymentProcessedEvent потрапив у DLT, місце може лишатися зарезервованим: key={} partition={} offset={} eventId={} reason={}",
 				key, partition, offset, event != null ? event.eventId() : null, reason);
 	}
 }

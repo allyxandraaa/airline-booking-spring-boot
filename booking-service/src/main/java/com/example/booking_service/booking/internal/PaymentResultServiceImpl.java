@@ -38,16 +38,16 @@ class PaymentResultServiceImpl implements PaymentResultService {
 	@Override
 	public void applyPaymentResult(PaymentProcessedEvent event) {
 		if (processedEventRepository.existsById(event.eventId())) {
-			log.info("Event {} already processed: duplicate, skip", event.eventId());
+			log.info("Подію {} уже оброблено: дублікат, пропускаємо", event.eventId());
 			return;
 		}
 		Booking booking = bookingRepository.findById(event.bookingId()).orElse(null);
 		if (booking == null) {
-			log.warn("Booking {} not found for event {}, skipping", event.bookingId(), event.eventId());
+			log.warn("Бронювання {} для події {} не знайдено, пропускаємо", event.bookingId(), event.eventId());
 			return;
 		}
 		if (booking.getStatus() != BookingStatus.SEAT_RESERVED) {
-			log.info("Booking {} is already {}, ignoring event {}", booking.getId(), booking.getStatus(), event.eventId());
+			log.info("Бронювання {} уже має статус {}, подію {} ігноруємо", booking.getId(), booking.getStatus(), event.eventId());
 			return;
 		}
 		if (event.status() != PaymentProcessedStatus.SUCCESS) {
@@ -56,7 +56,7 @@ class PaymentResultServiceImpl implements PaymentResultService {
 		try {
 			transactionTemplate.executeWithoutResult(status -> apply(event));
 		} catch (DataIntegrityViolationException e) {
-			log.info("Event {} processed concurrently: duplicate, skip", event.eventId());
+			log.info("Подію {} оброблено паралельно: дублікат, пропускаємо", event.eventId());
 		}
 	}
 
@@ -66,12 +66,12 @@ class PaymentResultServiceImpl implements PaymentResultService {
 				? booking.confirm(event.paymentId())
 				: booking.failPayment(event.paymentId());
 		if (!changed) {
-			log.info("Booking {} is already {}, ignoring event {}", booking.getId(), booking.getStatus(), event.eventId());
+			log.info("Бронювання {} уже має статус {}, подію {} ігноруємо", booking.getId(), booking.getStatus(), event.eventId());
 			return;
 		}
 		bookingRepository.save(booking);
 		processedEventRepository.saveAndFlush(new ProcessedEvent(event.eventId(), Instant.now()));
-		log.info("Booking {} is now {} after payment result {} (reason: {})",
+		log.info("Бронювання {} тепер має статус {} після результату оплати {} (причина: {})",
 				booking.getId(), booking.getStatus(), event.status(), event.reason());
 	}
 

@@ -73,7 +73,7 @@ class PaymentProcessedListenerTest {
 				new StringDeserializer(), new StringDeserializer()).createConsumer();
 		dltConsumer.subscribe(List.of("payment-events-dlt"));
 		PaymentProcessedEvent event = PaymentProcessedEvent.now(UUID.randomUUID(), null, PaymentProcessedStatus.DECLINED, null);
-		doThrow(new TransientBookingException("flight service down", null))
+		doThrow(new TransientBookingException("сервіс рейсів недоступний", null))
 				.when(paymentResultService).applyPaymentResult(event);
 
 		kafkaTemplate.send("payment-events", event.bookingId().toString(), event);

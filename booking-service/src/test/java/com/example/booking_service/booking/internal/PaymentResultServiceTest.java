@@ -94,7 +94,7 @@ class PaymentResultServiceTest {
 
 	@Test
 	void concurrentDuplicateIsTreatedAsProcessed() {
-		doThrow(new DataIntegrityViolationException("duplicate key"))
+		doThrow(new DataIntegrityViolationException("дублікат ключа"))
 				.when(processedEventRepository).saveAndFlush(any(ProcessedEvent.class));
 
 		service.applyPaymentResult(event(PaymentProcessedStatus.SUCCESS, paymentId));
@@ -121,7 +121,7 @@ class PaymentResultServiceTest {
 
 	@Test
 	void seatReleaseFailureIsTransientAndLeavesBookingReserved() {
-		doThrow(new IllegalStateException("flight service down")).when(flightGateway).releaseSeat(reservationId);
+		doThrow(new IllegalStateException("сервіс рейсів недоступний")).when(flightGateway).releaseSeat(reservationId);
 
 		assertThatThrownBy(() -> service.applyPaymentResult(event(PaymentProcessedStatus.DECLINED, paymentId)))
 				.isInstanceOf(TransientBookingException.class);

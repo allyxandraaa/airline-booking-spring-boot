@@ -1,6 +1,7 @@
 package com.example.booking_service.booking.internal;
 
 import com.example.booking_service.booking.BookingReservedEvent;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.support.SendResult;
 import tools.jackson.databind.json.JsonMapper;
@@ -24,7 +25,8 @@ class PollingOutboxSchedulerTest {
 	private final OutboxRepository repository = mock(OutboxRepository.class);
 	private final BookingEventPublisher publisher = mock(BookingEventPublisher.class);
 	private final JsonMapper jsonMapper = JsonMapper.builder().build();
-	private final PollingOutboxScheduler scheduler = new PollingOutboxScheduler(repository, publisher, jsonMapper, 1000);
+	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+	private final PollingOutboxScheduler scheduler = new PollingOutboxScheduler(repository, publisher, jsonMapper, registry, 1000);
 
 	@Test
 	void publishesPendingRecordsAndMarksThemProcessed() {
@@ -38,6 +40,15 @@ class PollingOutboxSchedulerTest {
 
 		verify(publisher).publish(event);
 		assertThat(record.isProcessed()).isTrue();
+	}
+
+	@Test
+	void pendingEventsGaugeReflectsRepositoryCount() {
+		when(repository.countByProcessedFalse()).thenReturn(5L);
+		assertThat(registry.get("outbox.pending.events").gauge().value()).isEqualTo(5.0);
+
+		when(repository.countByProcessedFalse()).thenReturn(0L);
+		assertThat(registry.get("outbox.pending.events").gauge().value()).isZero();
 	}
 
 	@Test

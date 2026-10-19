@@ -7,7 +7,9 @@ import com.example.booking_service.booking.TicketClass;
 import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.booking_service.exception.BookingProcessingException;
 import com.example.booking_service.integration.FlightGateway;
+import com.example.booking_service.integration.FlightNotFoundException;
 import com.example.booking_service.integration.PassengerGateway;
+import com.example.booking_service.integration.PassengerNotFoundException;
 import com.example.booking_service.integration.SeatUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,6 +121,34 @@ class BookingServiceTest {
 				.satisfies(booking -> assertThat(booking.getStatus()).isEqualTo(BookingStatus.FAILED));
 		verifyNoInteractions(outboxRepository);
 		verify(flightGateway, never()).releaseSeat(any());
+	}
+
+	@Test
+	void createMarksBookingFailedWhenFlightIsUnknown() {
+		when(flightGateway.getPrice(any(), any())).thenThrow(new FlightNotFoundException(request.flightId()));
+
+		assertThatThrownBy(() -> service.create(request)).isInstanceOf(FlightNotFoundException.class);
+
+		assertThat(store.values()).singleElement()
+				.satisfies(booking -> assertThat(booking.getStatus()).isEqualTo(BookingStatus.FAILED));
+		verifyNoInteractions(outboxRepository);
+		verify(flightGateway, never()).reserveSeat(any(), any());
+		verify(flightGateway, never()).releaseSeat(any());
+	}
+
+	@Test
+	void createReleasesSeatAndFailsBookingWhenPassengerIsUnknown() {
+		UUID reservationId = UUID.randomUUID();
+		when(flightGateway.getPrice(any(), any())).thenReturn(new BigDecimal("120.50"));
+		when(flightGateway.reserveSeat(any(), any())).thenReturn(reservationId);
+		when(passengerGateway.getPaymentMethodId(any())).thenThrow(new PassengerNotFoundException(request.passengerId()));
+
+		assertThatThrownBy(() -> service.create(request)).isInstanceOf(PassengerNotFoundException.class);
+
+		verify(flightGateway).releaseSeat(reservationId);
+		assertThat(store.values()).singleElement()
+				.satisfies(booking -> assertThat(booking.getStatus()).isEqualTo(BookingStatus.FAILED));
+		verifyNoInteractions(outboxRepository);
 	}
 
 	@Test

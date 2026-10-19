@@ -7,7 +7,9 @@ import com.example.booking_service.booking.CreateBookingRequest;
 import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.booking_service.exception.BookingProcessingException;
 import com.example.booking_service.integration.FlightGateway;
+import com.example.booking_service.integration.FlightNotFoundException;
 import com.example.booking_service.integration.PassengerGateway;
+import com.example.booking_service.integration.PassengerNotFoundException;
 import com.example.booking_service.integration.SeatUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,7 @@ class BookingServiceImpl implements BookingService {
 		try {
 			price = flightGateway.getPrice(request.flightId(), request.ticketClass());
 			reservationId = flightGateway.reserveSeat(request.flightId(), request.ticketClass());
-		} catch (SeatUnavailableException e) {
+		} catch (SeatUnavailableException | FlightNotFoundException e) {
 			markFailed(bookingId);
 			throw e;
 		} catch (RuntimeException e) {
@@ -71,6 +73,9 @@ class BookingServiceImpl implements BookingService {
 			UUID paymentMethodId = passengerGateway.getPaymentMethodId(request.passengerId());
 			return transactionTemplate.execute(status ->
 					reserveAndEnqueuePayment(bookingId, price, reservationId, paymentMethodId));
+		} catch (PassengerNotFoundException e) {
+			compensate(bookingId, reservationId);
+			throw e;
 		} catch (RuntimeException e) {
 			compensate(bookingId, reservationId);
 			throw new BookingProcessingException("Не вдалося завершити бронювання", e);

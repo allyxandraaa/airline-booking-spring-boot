@@ -7,6 +7,8 @@ import com.example.booking_service.booking.CreateBookingRequest;
 import com.example.booking_service.booking.TicketClass;
 import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.booking_service.exception.BookingProcessingException;
+import com.example.booking_service.integration.FlightNotFoundException;
+import com.example.booking_service.integration.PassengerNotFoundException;
 import com.example.booking_service.integration.SeatUnavailableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +159,35 @@ class BookingControllerTest {
 				.andExpect(status().isConflict())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
 				.andExpect(jsonPath("$.status").value(409));
+	}
+
+	@Test
+	void createForUnknownFlightReturns404ProblemDetail() throws Exception {
+		UUID flightId = UUID.randomUUID();
+		when(bookingService.create(any(CreateBookingRequest.class))).thenThrow(new FlightNotFoundException(flightId));
+
+		mockMvc.perform(post("/api/v1/bookings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(createBody(flightId, UUID.randomUUID(), "Ivan Petrenko", "ECONOMY")))
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.title").value("Рейс не знайдено"));
+	}
+
+	@Test
+	void createForUnknownPassengerReturns404ProblemDetail() throws Exception {
+		UUID passengerId = UUID.randomUUID();
+		when(bookingService.create(any(CreateBookingRequest.class)))
+				.thenThrow(new PassengerNotFoundException(passengerId));
+
+		mockMvc.perform(post("/api/v1/bookings")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(createBody(UUID.randomUUID(), passengerId, "Ivan Petrenko", "ECONOMY")))
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.title").value("Пасажира не знайдено"));
 	}
 
 	@Test

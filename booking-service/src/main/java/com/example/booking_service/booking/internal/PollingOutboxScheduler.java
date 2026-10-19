@@ -1,6 +1,8 @@
 package com.example.booking_service.booking.internal;
 
 import com.example.booking_service.booking.BookingReservedEvent;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,11 +29,15 @@ class PollingOutboxScheduler {
 	PollingOutboxScheduler(OutboxRepository outboxRepository,
 						   BookingEventPublisher publisher,
 						   JsonMapper jsonMapper,
+						   MeterRegistry registry,
 						   @Value("${outbox.scheduler.send-timeout-ms:5000}") long sendTimeoutMs) {
 		this.outboxRepository = outboxRepository;
 		this.publisher = publisher;
 		this.jsonMapper = jsonMapper;
 		this.sendTimeoutMs = sendTimeoutMs;
+		Gauge.builder("outbox.pending.events", outboxRepository, OutboxRepository::countByProcessedFalse)
+				.description("Події outbox, ще не відправлені в Kafka")
+				.register(registry);
 	}
 
 	@Scheduled(fixedDelayString = "${outbox.scheduler.delay-ms:500}")

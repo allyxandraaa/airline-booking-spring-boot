@@ -14,4 +14,6 @@ interface OutboxRepository extends JpaRepository<OutboxRecord, UUID> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
 	List<OutboxRecord> findTop50ByProcessedFalseOrderByCreatedAtAsc();
+
+	long countByProcessedFalse();
 }

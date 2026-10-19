@@ -67,3 +67,12 @@
 Обмін подіями між `booking-service` і `payment-service` через Kafka:
 - #27: `@KafkaListener` на `booking-events` створює платіж `CHARGE`, ключі подій фіксуються в `processed_events` в одній транзакції з платежем (Idempotent Consumer). Ретраї через `@RetryableTopic` і Dead Letter Topic, з DLT у `booking-service` іде результат `FAILED`. Результат оплати публікується в `payment-events` через Transactional Outbox. Додано `GET /api/v1/payments?bookingId=` і тести з EmbeddedKafka.
 - #29: споживач результату оплати в `booking-service`. `SUCCESS` переводить бронювання в `CONFIRMED`, `DECLINED`/`FAILED` звільняє місце через `FlightGateway` і ставить `FAILED` (SAGA-компенсація). Дублікати відсікаються за `eventId` у `processed_events`; збій звільнення місця йде в ретраї та DLT, бронювання при цьому лишається `SEAT_RESERVED`.
+
+## Групове завдання 6
+
+### Говорищева Вероніка Максимівна
+
+Бізнес-метрики Micrometer у трьох сервісах:
+- #39: Counter `payments.processed.total` з тегом `status` (`SUCCESS`/`DECLINED`) у `PaymentServiceImpl.charge`. Інкремент стоїть у кінці методу, щоб відкочена транзакція не потрапляла в лічильник. Серія `payments_processed_total` живить правило алерту `PaymentHighDeclineRate`.
+- #40: Timer `bookings.confirmation.duration` у `PaymentResultServiceImpl.apply`: час від створення бронювання до підтвердження оплати, записується лише для бронювань, що перейшли в `CONFIRMED`.
+- #41: LongTaskTimer `overbooking.compensation` навколо `CompensationServiceImpl.compensate` зі стопом у `finally`, тож активна задача не зависає при винятку. Тест перевіряє `activeTasks` під час виконання і після нього.

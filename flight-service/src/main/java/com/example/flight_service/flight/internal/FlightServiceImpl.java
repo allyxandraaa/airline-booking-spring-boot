@@ -8,6 +8,8 @@ import com.example.flight_service.flight.FlightDto;
 import com.example.flight_service.flight.FlightService;
 import com.example.flight_service.flight.ReservationDto;
 import com.example.flight_service.flight.TicketClass;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,15 +30,26 @@ class FlightServiceImpl implements FlightService {
 	private final InventoryRepository inventoryRepository;
 	private final ReservationRepository reservationRepository;
 	private final TransactionTemplate transactionTemplate;
+	private final DistributionSummary economyPriceSummary;
+	private final DistributionSummary businessPriceSummary;
 
 	FlightServiceImpl(FlightRepository flightRepository,
 					  InventoryRepository inventoryRepository,
 					  ReservationRepository reservationRepository,
-					  PlatformTransactionManager transactionManager) {
+					  PlatformTransactionManager transactionManager,
+					  MeterRegistry registry) {
 		this.flightRepository = flightRepository;
 		this.inventoryRepository = inventoryRepository;
 		this.reservationRepository = reservationRepository;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
+		this.economyPriceSummary = DistributionSummary.builder("flights.price.economy")
+				.description("Розподіл розрахованих цін економ-класу")
+				.serviceLevelObjectives(100, 125, 150, 200, 250, 300, 350)
+				.register(registry);
+		this.businessPriceSummary = DistributionSummary.builder("flights.price.business")
+				.description("Розподіл розрахованих цін бізнес-класу")
+				.serviceLevelObjectives(200, 250, 300, 400, 500, 600, 750)
+				.register(registry);
 	}
 
 	@Override
@@ -59,10 +72,12 @@ class FlightServiceImpl implements FlightService {
 				.orElseThrow(() -> new FlightNotFoundException(flightId));
 		Inventory inventory = inventoryRepository.findById(flightId)
 				.orElseThrow(() -> new FlightNotFoundException(flightId));
-		return flight.basePrice(ticketClass)
+		BigDecimal price = flight.basePrice(ticketClass)
 				.multiply(BigDecimal.ONE.add(OCCUPANCY_WEIGHT.multiply(inventory.occupancy(ticketClass))))
 				.multiply(timeFactor(flight.getDepartureTime()))
 				.setScale(2, RoundingMode.HALF_UP);
+		(ticketClass == TicketClass.ECONOMY ? economyPriceSummary : businessPriceSummary).record(price.doubleValue());
+		return price;
 	}
 
 	@Override

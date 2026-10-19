@@ -7,6 +7,8 @@ import com.example.flight_service.flight.CreateFlightRequest;
 import com.example.flight_service.flight.FlightDto;
 import com.example.flight_service.flight.ReservationDto;
 import com.example.flight_service.flight.TicketClass;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,8 +36,9 @@ class FlightServiceTest {
 	private final FlightRepository flightRepository = mock(FlightRepository.class);
 	private final InventoryRepository inventoryRepository = mock(InventoryRepository.class);
 	private final ReservationRepository reservationRepository = mock(ReservationRepository.class);
+	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
 	private final FlightServiceImpl service = new FlightServiceImpl(
-			flightRepository, inventoryRepository, reservationRepository, mock(PlatformTransactionManager.class));
+			flightRepository, inventoryRepository, reservationRepository, mock(PlatformTransactionManager.class), registry);
 
 	private final UUID flightId = UUID.randomUUID();
 
@@ -97,6 +100,19 @@ class FlightServiceTest {
 		givenFlight(20, 100, 0, 6);
 
 		assertThat(service.calculatePrice(flightId, TicketClass.BUSINESS)).isEqualByComparingTo("350.00");
+	}
+
+	@Test
+	void priceIsRecordedInSummaryOfItsTicketClass() {
+		givenFlight(20, 100, 0, 0);
+
+		service.calculatePrice(flightId, TicketClass.ECONOMY);
+		service.calculatePrice(flightId, TicketClass.ECONOMY);
+
+		DistributionSummary economy = registry.get("flights.price.economy").summary();
+		assertThat(economy.count()).isEqualTo(2);
+		assertThat(economy.totalAmount()).isEqualTo(240.0);
+		assertThat(registry.get("flights.price.business").summary().count()).isZero();
 	}
 
 	@Test

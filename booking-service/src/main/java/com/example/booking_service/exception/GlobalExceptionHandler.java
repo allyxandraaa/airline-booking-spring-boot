@@ -1,5 +1,7 @@
 package com.example.booking_service.exception;
 
+import com.example.booking_service.integration.FlightNotFoundException;
+import com.example.booking_service.integration.PassengerNotFoundException;
 import com.example.booking_service.integration.SeatUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(BookingNotFoundException.class)
 	public ProblemDetail handleBookingNotFound(BookingNotFoundException ex) {
 		return problem(HttpStatus.NOT_FOUND, "Бронювання не знайдено", "Бронювання з вказаним ідентифікатором не існує");
+	}
+
+	@ExceptionHandler(FlightNotFoundException.class)
+	public ProblemDetail handleFlightNotFound(FlightNotFoundException ex) {
+		return problem(HttpStatus.NOT_FOUND, "Рейс не знайдено", "Рейс з вказаним ідентифікатором не існує");
+	}
+
+	@ExceptionHandler(PassengerNotFoundException.class)
+	public ProblemDetail handlePassengerNotFound(PassengerNotFoundException ex) {
+		return problem(HttpStatus.NOT_FOUND, "Пасажира не знайдено", "Пасажир з вказаним ідентифікатором не існує");
 	}
 
 	@ExceptionHandler(SeatUnavailableException.class)

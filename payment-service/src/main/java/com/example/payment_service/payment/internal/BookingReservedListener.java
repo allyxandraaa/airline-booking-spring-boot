@@ -28,7 +28,7 @@ class BookingReservedListener {
 		this.paymentService = paymentService;
 	}
 
-	@RetryableTopic(attempts = "3",
+	@RetryableTopic(attempts = "3", numPartitions = "3",
 			backOff = @BackOff(delayString = "${payment.consumer.retry.delay:1000}",
 					multiplierString = "${payment.consumer.retry.multiplier:2.0}"),
 			include = TransientPaymentException.class,

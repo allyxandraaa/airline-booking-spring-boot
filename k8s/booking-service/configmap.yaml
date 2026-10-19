@@ -9,3 +9,4 @@ data:
   DB_USER: "postgres"
   FLIGHT_SERVICE_URL: "http://flight-service:8081"
   CUSTOMER_SERVICE_URL: "http://customer-service:8085"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"

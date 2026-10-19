@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: airline-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: payment-alerts
+      rules:
+        - alert: PaymentHighDeclineRate
+          expr: |
+            sum(rate(payments_processed_total{status="DECLINED"}[2m]))
+              / sum(rate(payments_processed_total[2m])) > 0.3
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Висока частка відхилених платежів"
+            description: "Понад 30% платежів відхилено протягом останніх 2 хвилин."

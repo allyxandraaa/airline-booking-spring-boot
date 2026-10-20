@@ -6,6 +6,7 @@ import com.example.booking_service.booking.PaymentProcessedStatus;
 import com.example.booking_service.booking.TicketClass;
 import com.example.booking_service.exception.TransientBookingException;
 import com.example.booking_service.integration.FlightGateway;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,8 +33,9 @@ class PaymentResultServiceTest {
 	private final BookingRepository bookingRepository = mock(BookingRepository.class);
 	private final ProcessedEventRepository processedEventRepository = mock(ProcessedEventRepository.class);
 	private final FlightGateway flightGateway = mock(FlightGateway.class);
+	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
 	private final PaymentResultServiceImpl service = new PaymentResultServiceImpl(
-			bookingRepository, processedEventRepository, flightGateway, mock(PlatformTransactionManager.class));
+			bookingRepository, processedEventRepository, flightGateway, mock(PlatformTransactionManager.class), registry);
 
 	private final UUID reservationId = UUID.randomUUID();
 	private final UUID paymentId = UUID.randomUUID();
@@ -59,6 +61,7 @@ class PaymentResultServiceTest {
 		assertThat(booking.getPaymentId()).isEqualTo(paymentId);
 		verify(processedEventRepository).saveAndFlush(any(ProcessedEvent.class));
 		verify(flightGateway, never()).releaseSeat(any());
+		assertThat(registry.get("bookings.confirmation.duration").timer().count()).isEqualTo(1);
 	}
 
 	@Test
@@ -69,6 +72,7 @@ class PaymentResultServiceTest {
 		assertThat(booking.getStatus()).isEqualTo(BookingStatus.FAILED);
 		assertThat(booking.getPaymentId()).isEqualTo(paymentId);
 		verify(processedEventRepository).saveAndFlush(any(ProcessedEvent.class));
+		assertThat(registry.get("bookings.confirmation.duration").timer().count()).isZero();
 	}
 
 	@Test

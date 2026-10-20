@@ -6,6 +6,8 @@ import com.example.booking_service.booking.PaymentProcessedStatus;
 import com.example.booking_service.booking.PaymentResultService;
 import com.example.booking_service.exception.TransientBookingException;
 import com.example.booking_service.integration.FlightGateway;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Service
@@ -24,15 +27,20 @@ class PaymentResultServiceImpl implements PaymentResultService {
 	private final ProcessedEventRepository processedEventRepository;
 	private final FlightGateway flightGateway;
 	private final TransactionTemplate transactionTemplate;
+	private final Timer confirmationTimer;
 
 	PaymentResultServiceImpl(BookingRepository bookingRepository,
 							 ProcessedEventRepository processedEventRepository,
 							 FlightGateway flightGateway,
-							 PlatformTransactionManager transactionManager) {
+							 PlatformTransactionManager transactionManager,
+							 MeterRegistry registry) {
 		this.bookingRepository = bookingRepository;
 		this.processedEventRepository = processedEventRepository;
 		this.flightGateway = flightGateway;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
+		this.confirmationTimer = Timer.builder("bookings.confirmation.duration")
+				.description("Час від створення бронювання до підтвердження оплати")
+				.register(registry);
 	}
 
 	@Override
@@ -71,6 +79,9 @@ class PaymentResultServiceImpl implements PaymentResultService {
 		}
 		bookingRepository.save(booking);
 		processedEventRepository.saveAndFlush(new ProcessedEvent(event.eventId(), Instant.now()));
+		if (booking.getStatus() == BookingStatus.CONFIRMED) {
+			confirmationTimer.record(Duration.between(booking.getPurchaseTime(), Instant.now()));
+		}
 		log.info("Бронювання {} тепер має статус {} після результату оплати {} (причина: {})",
 				booking.getId(), booking.getStatus(), event.status(), event.reason());
 	}

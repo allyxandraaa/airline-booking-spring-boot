@@ -70,6 +70,16 @@
 
 ## Групове завдання 6
 
+### Малій Олександра Михайлівна
+
+- #36: залежність `micrometer-registry-prometheus` і відкритий `/actuator/prometheus` у всіх п'яти сервісах.
+- #37: DistributionSummary `flights.price.economy` і `flights.price.business` з межами бакетів у євро.
+- #38: Gauge `outbox.pending.events` у `PollingOutboxScheduler`: скільки подій outbox ще не відправлено в Kafka.
+- #42: Prometheus, Prometheus Operator і Alertmanager у кластері через Helm-чарт `kube-prometheus-stack`.
+- #43: мітки `app` у `service.yaml` і `ServiceMonitor`: Prometheus опитує всі п'ять сервісів, 10 цілей зі статусом `UP`.
+- #44: правило алерту `PaymentHighDeclineRate` і маршрутизація Alertmanager; перехід у `Firing` перевірено під навантаженням.
+із трьома партиціями незалежно від порядку старту сервісів.
+- #45: звіт `docs/MONITORING_REPORT.md` зі скриншотами метрик усіх типів, targets і спрацювання алерту.
 ### Говорищева Вероніка Максимівна
 
 Бізнес-метрики Micrometer у трьох сервісах:

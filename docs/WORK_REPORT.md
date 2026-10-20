@@ -67,3 +67,16 @@
 Обмін подіями між `booking-service` і `payment-service` через Kafka:
 - #27: `@KafkaListener` на `booking-events` створює платіж `CHARGE`, ключі подій фіксуються в `processed_events` в одній транзакції з платежем (Idempotent Consumer). Ретраї через `@RetryableTopic` і Dead Letter Topic, з DLT у `booking-service` іде результат `FAILED`. Результат оплати публікується в `payment-events` через Transactional Outbox. Додано `GET /api/v1/payments?bookingId=` і тести з EmbeddedKafka.
 - #29: споживач результату оплати в `booking-service`. `SUCCESS` переводить бронювання в `CONFIRMED`, `DECLINED`/`FAILED` звільняє місце через `FlightGateway` і ставить `FAILED` (SAGA-компенсація). Дублікати відсікаються за `eventId` у `processed_events`; збій звільнення місця йде в ретраї та DLT, бронювання при цьому лишається `SEAT_RESERVED`.
+
+## Групове завдання 6
+
+### Малій Олександра Михайлівна
+
+- #36: залежність `micrometer-registry-prometheus` і відкритий `/actuator/prometheus` у всіх п'яти сервісах.
+- #37: DistributionSummary `flights.price.economy` і `flights.price.business` з межами бакетів у євро.
+- #38: Gauge `outbox.pending.events` у `PollingOutboxScheduler`: скільки подій outbox ще не відправлено в Kafka.
+- #42: Prometheus, Prometheus Operator і Alertmanager у кластері через Helm-чарт `kube-prometheus-stack`.
+- #43: мітки `app` у `service.yaml` і `ServiceMonitor`: Prometheus опитує всі п'ять сервісів, 10 цілей зі статусом `UP`.
+- #44: правило алерту `PaymentHighDeclineRate` і маршрутизація Alertmanager; перехід у `Firing` перевірено під навантаженням.
+із трьома партиціями незалежно від порядку старту сервісів.
+- #45: звіт `docs/MONITORING_REPORT.md` зі скриншотами метрик усіх типів, targets і спрацювання алерту.

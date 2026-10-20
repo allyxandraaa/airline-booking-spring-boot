@@ -9,6 +9,8 @@ import com.example.payment_service.payment.PaymentStatus;
 import com.example.payment_service.payment.PaymentType;
 import com.example.payment_service.payment.RefundRequest;
 import com.example.payment_service.payment.RefundResponse;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,7 @@ class PaymentServiceImpl implements PaymentService {
 	private final ConsumerFailureSimulator failureSimulator;
 	private final TransactionTemplate transactionTemplate;
 	private final JsonMapper jsonMapper;
+	private final MeterRegistry registry;
 	private final double declineProbability;
 
 	PaymentServiceImpl(PaymentRepository paymentRepository,
@@ -45,6 +48,7 @@ class PaymentServiceImpl implements PaymentService {
 					   ConsumerFailureSimulator failureSimulator,
 					   PlatformTransactionManager transactionManager,
 					   JsonMapper jsonMapper,
+					   MeterRegistry registry,
 					   @Value("${payment.decline-probability:0.1}") double declineProbability) {
 		this.paymentRepository = paymentRepository;
 		this.idempotencyRepository = idempotencyRepository;
@@ -53,6 +57,7 @@ class PaymentServiceImpl implements PaymentService {
 		this.failureSimulator = failureSimulator;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.jsonMapper = jsonMapper;
+		this.registry = registry;
 		this.declineProbability = declineProbability;
 	}
 
@@ -103,6 +108,11 @@ class PaymentServiceImpl implements PaymentService {
 		saveResult(event.bookingId(), payment.getId(),
 				declined ? PaymentProcessedStatus.DECLINED : PaymentProcessedStatus.SUCCESS,
 				declined ? DECLINED_REASON : null);
+		Counter.builder("payments.processed.total")
+				.description("Оброблені платежі за статусом")
+				.tag("status", payment.getStatus().name())
+				.register(registry)
+				.increment();
 		log.info("Payment {} for booking {} is {}", payment.getId(), event.bookingId(), payment.getStatus());
 	}
 

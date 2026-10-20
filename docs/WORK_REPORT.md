@@ -80,3 +80,9 @@
 - #44: правило алерту `PaymentHighDeclineRate` і маршрутизація Alertmanager; перехід у `Firing` перевірено під навантаженням.
 із трьома партиціями незалежно від порядку старту сервісів.
 - #45: звіт `docs/MONITORING_REPORT.md` зі скриншотами метрик усіх типів, targets і спрацювання алерту.
+### Говорищева Вероніка Максимівна
+
+Бізнес-метрики Micrometer у трьох сервісах:
+- #39: Counter `payments.processed.total` з тегом `status` (`SUCCESS`/`DECLINED`) у `PaymentServiceImpl.charge`. Інкремент стоїть у кінці методу, щоб відкочена транзакція не потрапляла в лічильник. Серія `payments_processed_total` живить правило алерту `PaymentHighDeclineRate`.
+- #40: Timer `bookings.confirmation.duration` у `PaymentResultServiceImpl.apply`: час від створення бронювання до підтвердження оплати, записується лише для бронювань, що перейшли в `CONFIRMED`.
+- #41: LongTaskTimer `overbooking.compensation` навколо `CompensationServiceImpl.compensate` зі стопом у `finally`, тож активна задача не зависає при винятку. Тест перевіряє `activeTasks` під час виконання і після нього.

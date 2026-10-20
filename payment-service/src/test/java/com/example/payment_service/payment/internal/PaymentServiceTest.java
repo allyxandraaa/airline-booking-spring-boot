@@ -7,6 +7,7 @@ import com.example.payment_service.payment.PaymentType;
 import com.example.payment_service.payment.RefundRequest;
 import com.example.payment_service.payment.RefundResponse;
 import com.example.payment_service.payment.TransientPaymentException;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,13 +44,14 @@ class PaymentServiceTest {
 	private final OutboxEventRepository outboxRepository = mock(OutboxEventRepository.class);
 	private final PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
 	private final JsonMapper jsonMapper = JsonMapper.builder().build();
+	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
 	private final PaymentServiceImpl service = service(0, 0.0);
 	private final Map<String, IdempotencyRecord> store = new HashMap<>();
 
 	private PaymentServiceImpl service(int failuresBeforeSuccess, double declineProbability) {
 		return new PaymentServiceImpl(paymentRepository, idempotencyRepository, processedEventRepository,
 				outboxRepository, new ConsumerFailureSimulator(failuresBeforeSuccess), transactionManager,
-				jsonMapper, declineProbability);
+				jsonMapper, registry, declineProbability);
 	}
 
 	@BeforeEach
@@ -148,6 +150,7 @@ class PaymentServiceTest {
 				.contains("\"status\":\"SUCCESS\"")
 				.contains("\"paymentId\":\"" + payment.getValue().getId() + "\"")
 				.contains("\"eventId\":\"" + outbox.getValue().getId() + "\"");
+		assertThat(registry.get("payments.processed.total").tag("status", "SUCCESS").counter().count()).isEqualTo(1.0);
 	}
 
 	@Test
@@ -160,6 +163,8 @@ class PaymentServiceTest {
 		ArgumentCaptor<OutboxEvent> outbox = ArgumentCaptor.forClass(OutboxEvent.class);
 		verify(outboxRepository).save(outbox.capture());
 		assertThat(outbox.getValue().getPayload()).contains("\"status\":\"DECLINED\"");
+		assertThat(registry.get("payments.processed.total").tag("status", "DECLINED").counter().count()).isEqualTo(1.0);
+		assertThat(registry.find("payments.processed.total").tag("status", "SUCCESS").counter()).isNull();
 	}
 
 	@Test
@@ -171,6 +176,7 @@ class PaymentServiceTest {
 
 		verifyNoInteractions(paymentRepository, outboxRepository);
 		verify(processedEventRepository, never()).saveAndFlush(any());
+		assertThat(registry.find("payments.processed.total").counter()).isNull();
 	}
 
 	@Test

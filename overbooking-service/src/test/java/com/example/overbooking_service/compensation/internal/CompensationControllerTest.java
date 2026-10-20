@@ -6,6 +6,7 @@ import com.example.overbooking_service.client.dto.BatchRequest;
 import com.example.overbooking_service.client.dto.BookingDto;
 import com.example.overbooking_service.client.dto.RefundRequest;
 import com.example.overbooking_service.client.dto.RefundResponse;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CompensationController.class)
-@Import({CompensationServiceImpl.class, RefundGatewayImpl.class})
+@Import({CompensationServiceImpl.class, RefundGatewayImpl.class, SimpleMeterRegistry.class})
 class CompensationControllerTest {
 
 	@Autowired

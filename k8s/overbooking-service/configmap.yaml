@@ -9,3 +9,4 @@ data:
   DB_USER: "postgres"
   BOOKING_SERVICE_URL: "http://booking-service:8082"
   PAYMENT_SERVICE_URL: "http://payment-service:8083"
+  OTEL_TRACES_ENDPOINT: "http://otel-collector:4318/v1/traces"

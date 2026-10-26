@@ -8,3 +8,4 @@ data:
   DB_URL: "jdbc:postgresql://postgres-payment:5432/payment_db"
   DB_USER: "postgres"
   KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  OTEL_TRACES_ENDPOINT: "http://otel-collector:4318/v1/traces"

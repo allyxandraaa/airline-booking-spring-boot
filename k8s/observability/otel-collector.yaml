@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  labels:
+    app: otel-collector
+data:
+  otel-collector.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 20000
+        expected_new_traces_per_sec: 50
+        # Спани, що запізнилися, отримують уже ухвалене рішення, і трейс не розпадається
+        decision_cache:
+          sampled_cache_size: 100000
+          non_sampled_cache_size: 100000
+        policies:
+          # Будь-який спан зі статусом ERROR: трейс зберігається повністю
+          - name: keep-errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          # Повільні трейси зберігаються повністю
+          - name: keep-slow-traces
+            type: latency
+            latency:
+              threshold_ms: 2000
+          # Ручні виклики POST /api/v1/bookings зберігаються завжди (для демонстрації)
+          - name: keep-manual-bookings
+            type: string_attribute
+            string_attribute:
+              key: uri
+              values: ["/api/v1/bookings"]
+          # Решта швидких успішних трейсів: лише 1%
+          - name: sample-successful
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 1
+
+      batch:
+        timeout: 1s
+        send_batch_size: 1024
+
+    exporters:
+      otlp/tempo:
+        endpoint: tempo:4317
+        tls:
+          insecure: true
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, tail_sampling, batch]
+          exporters: [otlp/tempo]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.163.1
+          args:
+            - --config=/etc/otelcol/otel-collector.yaml
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+            - name: health
+              containerPort: 13133
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol
+              readOnly: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  type: ClusterIP
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318

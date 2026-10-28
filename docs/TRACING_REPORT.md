@@ -76,10 +76,10 @@ customer-service  flight-service  booking-service  payment-service  overbooking-
 
 Виконано `POST /api/v1/bookings`. У Grafana (Explore, джерело Tempo, Search за `Service Name = booking-service`) трейс містить:
 
-1. серверний спан `POST /api/v1/bookings` у `booking-service`;
-2. клієнтські спани `RestClient` до `flight-service` (ціна й резервація місця) і `customer-service` (спосіб оплати) та відповідні серверні спани в цих сервісах;
-3. спан `outbox relay` і спан PRODUCER `booking-events publish` у `booking-service`;
-4. спан CONSUMER `booking-events process` у `payment-service`, далі `outbox relay` і PRODUCER `payment-events publish`;
+1. серверний спан `http post /api/v1/bookings` у `booking-service`;
+2. клієнтські спани `RestClient` (`http get`, `http post`) до `flight-service` (ціна й резервація місця) і `customer-service` (спосіб оплати) та відповідні серверні спани в цих сервісах (`http get /api/v1/flights/{id}/price`, `http post /api/v1/flights/{id}/reservations`, `http get /api/v1/passengers/{id}/payment-method`);
+3. спан `outbox relay` і спан PRODUCER `booking-events send` у `booking-service`;
+4. спан CONSUMER `booking-events process` у `payment-service`, далі `outbox relay` і PRODUCER `payment-events send`;
 5. спан CONSUMER `payment-events process` у `booking-service`, де бронювання переходить у `CONFIRMED`.
 
 Усі спани мають один `traceId`, тобто три сервіси й два топіки Kafka видно в одному дереві.
@@ -92,7 +92,7 @@ customer-service  flight-service  booking-service  payment-service  overbooking-
 2. Виконано кілька `POST /api/v1/bookings`; `booking-service` отримав помилку з'єднання, позначив бронювання як `FAILED` і повернув `503`.
 3. Репліки `flight-service` повернуто.
 4. У Tempo запитом TraceQL `{ status = error }` знайдено трейс із помилкою: спан `RestClient` до `flight-service` має статус `ERROR`.
-5. На цьому спані натиснуто «Logs for this span»: Grafana відкрила Loki з рядками, у яких той самий `traceId`, зокрема рядок про недоступний сервіс рейсів.
+5. На цьому спані натиснуто «Logs for this trace»: Grafana відкрила Loki з рядками, у яких той самий `traceId`, зокрема рядок про недоступний сервіс рейсів.
 6. Той самий результат дає пошук у Loki вручну: `{service_name=~".+-service"} |= "<traceId>"`.
 
 ![Tempo: трейс із помилкою за запитом status = error](screenshots/tracing-02-error-trace.png)
@@ -106,7 +106,7 @@ customer-service  flight-service  booking-service  payment-service  overbooking-
 Після серії звичайних бронювань і сценарію з розділу 6 перевірено, що колектор зберіг потрібні трейси:
 
 - `{ status = error }` повертає трейси зі збоєм `flight-service` (політика `keep-errors`);
-- `{ duration > 2s }` повертає повільні трейси, наприклад бронювання з ретраями під час відновлення `flight-service` (політика `keep-slow-traces`);
+- `{ duration > 2s }` повертає повільні трейси, наприклад перше бронювання після перезапуску сервісів (~4,8 с через прогрів JVM і Kafka-продюсера) та фонові задачі `task outboxRelay.scheduledRelay` і `task pollingOutboxScheduler.processOutbox` (політика `keep-slow-traces`);
 - звичайні швидкі бронювання теж є в Tempo, бо їх зберігає `keep-manual-bookings`; решта фонових запитів, наприклад `GET /api/v1/bookings/{id}`, потрапляє лише з імовірністю 1%.
 
 ![Tempo: результати запитів status = error і duration > 2s](screenshots/tracing-05-sampling.png)

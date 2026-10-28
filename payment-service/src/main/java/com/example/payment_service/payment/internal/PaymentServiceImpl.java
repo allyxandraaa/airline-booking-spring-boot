@@ -36,6 +36,7 @@ class PaymentServiceImpl implements PaymentService {
 	private final ProcessedEventRepository processedEventRepository;
 	private final OutboxEventRepository outboxRepository;
 	private final ConsumerFailureSimulator failureSimulator;
+	private final OutboxTracing tracing;
 	private final TransactionTemplate transactionTemplate;
 	private final JsonMapper jsonMapper;
 	private final MeterRegistry registry;
@@ -46,6 +47,7 @@ class PaymentServiceImpl implements PaymentService {
 					   ProcessedEventRepository processedEventRepository,
 					   OutboxEventRepository outboxRepository,
 					   ConsumerFailureSimulator failureSimulator,
+					   OutboxTracing tracing,
 					   PlatformTransactionManager transactionManager,
 					   JsonMapper jsonMapper,
 					   MeterRegistry registry,
@@ -55,6 +57,7 @@ class PaymentServiceImpl implements PaymentService {
 		this.processedEventRepository = processedEventRepository;
 		this.outboxRepository = outboxRepository;
 		this.failureSimulator = failureSimulator;
+		this.tracing = tracing;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.jsonMapper = jsonMapper;
 		this.registry = registry;
@@ -120,7 +123,7 @@ class PaymentServiceImpl implements PaymentService {
 		UUID eventId = UUID.randomUUID();
 		PaymentProcessedEvent result = new PaymentProcessedEvent(eventId, bookingId, paymentId, status, reason, Instant.now());
 		outboxRepository.save(new OutboxEvent(eventId, "Payment", bookingId, "PaymentProcessed",
-				jsonMapper.writeValueAsString(result), result.occurredAt()));
+				jsonMapper.writeValueAsString(result), result.occurredAt(), tracing.currentTraceparent()));
 	}
 
 	private RefundResponse processRefund(String idempotencyKey, RefundRequest request) {

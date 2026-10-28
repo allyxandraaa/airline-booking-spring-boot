@@ -35,19 +35,22 @@ class BookingServiceImpl implements BookingService {
 	private final PassengerGateway passengerGateway;
 	private final TransactionTemplate transactionTemplate;
 	private final JsonMapper jsonMapper;
+	private final OutboxTracing tracing;
 
 	BookingServiceImpl(BookingRepository bookingRepository,
 					   OutboxRepository outboxRepository,
 					   FlightGateway flightGateway,
 					   PassengerGateway passengerGateway,
 					   PlatformTransactionManager transactionManager,
-					   JsonMapper jsonMapper) {
+					   JsonMapper jsonMapper,
+					   OutboxTracing tracing) {
 		this.bookingRepository = bookingRepository;
 		this.outboxRepository = outboxRepository;
 		this.flightGateway = flightGateway;
 		this.passengerGateway = passengerGateway;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.jsonMapper = jsonMapper;
+		this.tracing = tracing;
 	}
 
 	@Override
@@ -107,7 +110,7 @@ class BookingServiceImpl implements BookingService {
 
 		BookingReservedEvent event = BookingReservedEvent.now(bookingId, paymentMethodId, price);
 		outboxRepository.save(new OutboxRecord(event.eventId(), "Booking", bookingId, "BookingReserved",
-				jsonMapper.writeValueAsString(event), Instant.now()));
+				jsonMapper.writeValueAsString(event), Instant.now(), tracing.currentTraceparent()));
 		return toDto(booking);
 	}
 

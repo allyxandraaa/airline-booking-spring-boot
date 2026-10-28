@@ -44,9 +44,10 @@ class BookingServiceTest {
 	private final FlightGateway flightGateway = mock(FlightGateway.class);
 	private final PassengerGateway passengerGateway = mock(PassengerGateway.class);
 	private final JsonMapper jsonMapper = JsonMapper.builder().build();
+	private final OutboxTracing tracing = mock(OutboxTracing.class);
 	private final BookingServiceImpl service = new BookingServiceImpl(
 			repository, outboxRepository, flightGateway, passengerGateway,
-			mock(PlatformTransactionManager.class), jsonMapper);
+			mock(PlatformTransactionManager.class), jsonMapper, tracing);
 
 	private final Map<UUID, Booking> store = new HashMap<>();
 	private final CreateBookingRequest request = new CreateBookingRequest(
@@ -108,6 +109,20 @@ class BookingServiceTest {
 				.contains(dto.id().toString())
 				.contains(paymentMethodId.toString());
 		verify(flightGateway, never()).releaseSeat(any());
+	}
+
+	@Test
+	void createStoresTraceparentOfCurrentSpanInOutbox() {
+		when(flightGateway.getPrice(any(), any())).thenReturn(new BigDecimal("120.50"));
+		when(flightGateway.reserveSeat(any(), any())).thenReturn(UUID.randomUUID());
+		when(passengerGateway.getPaymentMethodId(any())).thenReturn(UUID.randomUUID());
+		when(tracing.currentTraceparent()).thenReturn("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01");
+
+		service.create(request);
+
+		ArgumentCaptor<OutboxRecord> captor = ArgumentCaptor.forClass(OutboxRecord.class);
+		verify(outboxRepository).save(captor.capture());
+		assertThat(captor.getValue().getTraceparent()).isEqualTo("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01");
 	}
 
 	@Test

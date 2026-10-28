@@ -24,16 +24,19 @@ class PollingOutboxScheduler {
 	private final OutboxRepository outboxRepository;
 	private final BookingEventPublisher publisher;
 	private final JsonMapper jsonMapper;
+	private final OutboxTracing tracing;
 	private final long sendTimeoutMs;
 
 	PollingOutboxScheduler(OutboxRepository outboxRepository,
 						   BookingEventPublisher publisher,
 						   JsonMapper jsonMapper,
 						   MeterRegistry registry,
+						   OutboxTracing tracing,
 						   @Value("${outbox.scheduler.send-timeout-ms:5000}") long sendTimeoutMs) {
 		this.outboxRepository = outboxRepository;
 		this.publisher = publisher;
 		this.jsonMapper = jsonMapper;
+		this.tracing = tracing;
 		this.sendTimeoutMs = sendTimeoutMs;
 		Gauge.builder("outbox.pending.events", outboxRepository, OutboxRepository::countByProcessedFalse)
 				.description("Події outbox, ще не відправлені в Kafka")
@@ -47,7 +50,7 @@ class PollingOutboxScheduler {
 		for (OutboxRecord record : pending) {
 			try {
 				BookingReservedEvent event = jsonMapper.readValue(record.getPayload(), BookingReservedEvent.class);
-				publisher.publish(event).get(sendTimeoutMs, TimeUnit.MILLISECONDS);
+				tracing.call(record.getTraceparent(), () -> publisher.publish(event).get(sendTimeoutMs, TimeUnit.MILLISECONDS));
 				record.markProcessed();
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

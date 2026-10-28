@@ -86,3 +86,13 @@
 - #39: Counter `payments.processed.total` з тегом `status` (`SUCCESS`/`DECLINED`) у `PaymentServiceImpl.charge`. Інкремент стоїть у кінці методу, щоб відкочена транзакція не потрапляла в лічильник. Серія `payments_processed_total` живить правило алерту `PaymentHighDeclineRate`.
 - #40: Timer `bookings.confirmation.duration` у `PaymentResultServiceImpl.apply`: час від створення бронювання до підтвердження оплати, записується лише для бронювань, що перейшли в `CONFIRMED`.
 - #41: LongTaskTimer `overbooking.compensation` навколо `CompensationServiceImpl.compensate` зі стопом у `finally`, тож активна задача не зависає при винятку. Тест перевіряє `activeTasks` під час виконання і після нього.
+
+## Групове завдання 7
+
+### Говорищева Вероніка Максимівна
+
+Логи та трасування в сервісах, джерела даних Grafana:
+- #64: JSON-логи в усіх п'яти сервісах через `logstash-logback-encoder` і `logback-spring.xml`: один рядок на запис із полями `app`, `traceId`, `spanId`. У ConfigMap вимкнено `show-sql`, бо SQL простим текстом ламав JSON.
+- #65: передача `traceparent` через outbox у `booking-service`. При збереженні `OutboxRecord` фіксується контекст поточного HTTP-спана, а `PollingOutboxScheduler` відновлює його перед відправкою, тому продюсерський спан стає частиною трейса запиту, а не окремим трейсом.
+- #66: те саме для `payment-service`: `OutboxEvent` зберігає `traceparent` спана слухача, `OutboxRelay` відновлює його перед публікацією результату в `payment-events`. Клас `OutboxTracing` і юніт-тест на запис і відновлення на реальному OpenTelemetry SDK.
+- #67: `k8s/monitoring/grafana-values.yaml` з джерелами Tempo і Loki: зі спана відкриваються логи з тим самим `traceId`, а поле `traceId` у рядку логу Loki є посиланням на трейс у Tempo.

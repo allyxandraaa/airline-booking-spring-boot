@@ -89,6 +89,14 @@
 
 ## Групове завдання 7
 
+### Малій Олександра Михайлівна
+
+- #59: Grafana Tempo (`k8s/observability/tempo.yaml`): StatefulSet з PVC 1Gi для сховища трейсів і Service на портах 3200 та 4317.
+- #60: Grafana Loki (`k8s/observability/loki.yaml`): StatefulSet з PVC 1Gi, прийом логів по OTLP, `service.name` стає міткою `service_name`.
+- #61: OpenTelemetry Collector (`k8s/observability/otel-collector.yaml`): прийом OTLP, tail sampling (помилки, повільні трейси, `/api/v1/bookings`, решта 1%) і експорт у Tempo. Ключ `uri` у політиці лишено, бо Spring Boot 4.1 кладе URI-шаблон саме в `uri`.
+- #62: агент збору логів `otel-log-agent` (DaemonSet з RBAC): читає логи подів і відправляє їх у Loki.
+- #63: `spring-boot-starter-opentelemetry` і налаштування OTLP у всіх п'яти сервісах, `OTEL_TRACES_ENDPOINT` у ConfigMap. Спани booking-, flight- і customer-service потрапляють в один трейс.
+
 ### Говорищева Вероніка Максимівна
 
 Логи та трасування в сервісах, джерела даних Grafana:

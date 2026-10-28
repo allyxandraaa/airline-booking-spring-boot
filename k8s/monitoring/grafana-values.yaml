@@ -1,0 +1,31 @@
+grafana:
+  additionalDataSources:
+    - name: Tempo
+      type: tempo
+      uid: tempo
+      access: proxy
+      url: http://tempo.default.svc:3200
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: loki
+          spanStartTimeShift: -5m
+          spanEndTimeShift: 5m
+          filterByTraceID: true
+          filterBySpanID: false
+          tags:
+            - key: service.name
+              value: service_name
+
+    - name: Loki
+      type: loki
+      uid: loki
+      access: proxy
+      url: http://loki.default.svc:3100
+      jsonData:
+        maxLines: 1000
+        derivedFields:
+          - name: TraceID
+            matcherRegex: '"traceId":"(\w+)"'
+            url: '$${__value.raw}'
+            datasourceUid: tempo
+            urlDisplayLabel: Відкрити трейс у Tempo

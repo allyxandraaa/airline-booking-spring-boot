@@ -24,13 +24,15 @@ public class OutboxRelay {
 	private final OutboxEventRepository outboxRepository;
 	private final KafkaTemplate<String, PaymentProcessedEvent> kafkaTemplate;
 	private final JsonMapper jsonMapper;
+	private final OutboxTracing tracing;
 	private final boolean enabled;
 
 	OutboxRelay(OutboxEventRepository outboxRepository, KafkaTemplate<String, PaymentProcessedEvent> kafkaTemplate,
-				JsonMapper jsonMapper, @Value("${outbox.relay.enabled:true}") boolean enabled) {
+				JsonMapper jsonMapper, OutboxTracing tracing, @Value("${outbox.relay.enabled:true}") boolean enabled) {
 		this.outboxRepository = outboxRepository;
 		this.kafkaTemplate = kafkaTemplate;
 		this.jsonMapper = jsonMapper;
+		this.tracing = tracing;
 		this.enabled = enabled;
 	}
 
@@ -45,7 +47,8 @@ public class OutboxRelay {
 		int sent = 0;
 		for (OutboxEvent event : outboxRepository.findTop50ByProcessedFalseOrderByCreatedAt()) {
 			try {
-				kafkaTemplate.send(toRecord(event)).get(SEND_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				tracing.call(event.getTraceparent(),
+						() -> kafkaTemplate.send(toRecord(event)).get(SEND_TIMEOUT_SECONDS, TimeUnit.SECONDS));
 			} catch (Exception e) {
 				log.warn("Outbox relay failed for event {}: {}", event.getId(), e.toString());
 				return sent;

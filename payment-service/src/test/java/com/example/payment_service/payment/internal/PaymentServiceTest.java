@@ -45,12 +45,13 @@ class PaymentServiceTest {
 	private final PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
 	private final JsonMapper jsonMapper = JsonMapper.builder().build();
 	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+	private final OutboxTracing tracing = mock(OutboxTracing.class);
 	private final PaymentServiceImpl service = service(0, 0.0);
 	private final Map<String, IdempotencyRecord> store = new HashMap<>();
 
 	private PaymentServiceImpl service(int failuresBeforeSuccess, double declineProbability) {
 		return new PaymentServiceImpl(paymentRepository, idempotencyRepository, processedEventRepository,
-				outboxRepository, new ConsumerFailureSimulator(failuresBeforeSuccess), transactionManager,
+				outboxRepository, new ConsumerFailureSimulator(failuresBeforeSuccess), tracing, transactionManager,
 				jsonMapper, registry, declineProbability);
 	}
 
@@ -151,6 +152,17 @@ class PaymentServiceTest {
 				.contains("\"paymentId\":\"" + payment.getValue().getId() + "\"")
 				.contains("\"eventId\":\"" + outbox.getValue().getId() + "\"");
 		assertThat(registry.get("payments.processed.total").tag("status", "SUCCESS").counter().count()).isEqualTo(1.0);
+	}
+
+	@Test
+	void outboxEventKeepsTraceparentOfCurrentSpan() {
+		when(tracing.currentTraceparent()).thenReturn("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01");
+
+		service.processBookingReserved(event());
+
+		ArgumentCaptor<OutboxEvent> outbox = ArgumentCaptor.forClass(OutboxEvent.class);
+		verify(outboxRepository).save(outbox.capture());
+		assertThat(outbox.getValue().getTraceparent()).isEqualTo("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01");
 	}
 
 	@Test

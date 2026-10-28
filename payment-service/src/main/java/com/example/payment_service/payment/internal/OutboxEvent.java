@@ -38,6 +38,9 @@ class OutboxEvent implements Persistable<UUID> {
 	@Column(nullable = false)
 	private boolean processed;
 
+	@Column(length = 55)
+	private String traceparent;
+
 	@Transient
 	private boolean isNew = true;
 
@@ -45,12 +48,18 @@ class OutboxEvent implements Persistable<UUID> {
 	}
 
 	OutboxEvent(UUID id, String aggregateType, UUID aggregateId, String eventType, String payload, Instant createdAt) {
+		this(id, aggregateType, aggregateId, eventType, payload, createdAt, null);
+	}
+
+	OutboxEvent(UUID id, String aggregateType, UUID aggregateId, String eventType, String payload, Instant createdAt,
+				String traceparent) {
 		this.id = id;
 		this.aggregateType = aggregateType;
 		this.aggregateId = aggregateId;
 		this.eventType = eventType;
 		this.payload = payload;
 		this.createdAt = createdAt;
+		this.traceparent = traceparent;
 	}
 
 	@Override
@@ -69,6 +78,10 @@ class OutboxEvent implements Persistable<UUID> {
 
 	String getPayload() {
 		return payload;
+	}
+
+	String getTraceparent() {
+		return traceparent;
 	}
 
 	boolean isProcessed() {

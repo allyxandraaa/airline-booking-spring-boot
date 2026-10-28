@@ -78,8 +78,10 @@
 - #42: Prometheus, Prometheus Operator і Alertmanager у кластері через Helm-чарт `kube-prometheus-stack`.
 - #43: мітки `app` у `service.yaml` і `ServiceMonitor`: Prometheus опитує всі п'ять сервісів, 10 цілей зі статусом `UP`.
 - #44: правило алерту `PaymentHighDeclineRate` і маршрутизація Alertmanager; перехід у `Firing` перевірено під навантаженням.
-із трьома партиціями незалежно від порядку старту сервісів.
+- #46: Kafka (KRaft) у кластері (`k8s/kafka/`: StatefulSet з PVC 1Gi і Service), `KAFKA_BOOTSTRAP_SERVERS` у ConfigMap `booking-service` і `payment-service`. У `@RetryableTopic` задано `numPartitions = "3"`, тож retry-топіки створюються із трьома партиціями незалежно від порядку старту сервісів.
+- Сервіси `flight-service` (рейси, ціни за класами, резервація та звільнення місць) і `customer-service` (пасажири, збережений спосіб оплати) з обробкою помилок через `ProblemDetail` і тестами. У `booking-service` заглушки `StubFlightGateway` і `StubPassengerGateway` замінено на `FlightGatewayImpl` і `PassengerGatewayImpl` поверх `RestClient`.
 - #45: звіт `docs/MONITORING_REPORT.md` зі скриншотами метрик усіх типів, targets і спрацювання алерту.
+
 ### Говорищева Вероніка Максимівна
 
 Бізнес-метрики Micrometer у трьох сервісах:
@@ -91,11 +93,13 @@
 
 ### Малій Олександра Михайлівна
 
+Інфраструктура трасування й збору логів у кластері, експорт спанів із сервісів і наскрізна перевірка:
 - #59: Grafana Tempo (`k8s/observability/tempo.yaml`): StatefulSet з PVC 1Gi для сховища трейсів і Service на портах 3200 та 4317.
 - #60: Grafana Loki (`k8s/observability/loki.yaml`): StatefulSet з PVC 1Gi, прийом логів по OTLP, `service.name` стає міткою `service_name`.
 - #61: OpenTelemetry Collector (`k8s/observability/otel-collector.yaml`): прийом OTLP, tail sampling (помилки, повільні трейси, `/api/v1/bookings`, решта 1%) і експорт у Tempo. Ключ `uri` у політиці лишено, бо Spring Boot 4.1 кладе URI-шаблон саме в `uri`.
 - #62: агент збору логів `otel-log-agent` (DaemonSet з RBAC): читає логи подів і відправляє їх у Loki.
-- #63: `spring-boot-starter-opentelemetry` і налаштування OTLP у всіх п'яти сервісах, `OTEL_TRACES_ENDPOINT` у ConfigMap. Спани booking-, flight- і customer-service потрапляють в один трейс.
+- #63: `spring-boot-starter-opentelemetry` і налаштування OTLP у всіх п'яти сервісах, `OTEL_TRACES_ENDPOINT` у ConfigMap. Експорт метрик і логів через OTLP вимкнено, бо метрики збирає Prometheus, а логи агент зі stdout. Спани booking-, flight- і customer-service потрапляють в один трейс.
+- #68: наскрізний сценарій у кластері: розгортання `k8s/observability/` і Grafana з джерелами Tempo та Loki, бронювання через booking, flight, customer і payment в одному трейсі, збій `flight-service` із переходом від спана з помилкою до рядка логу в Loki, перевірка політик семплінгу. Скриншоти `docs/screenshots/tracing-01…05` і виправлення назв спанів у `docs/TRACING_REPORT.md` за тим, що показує Tempo.
 
 ### Говорищева Вероніка Максимівна
 

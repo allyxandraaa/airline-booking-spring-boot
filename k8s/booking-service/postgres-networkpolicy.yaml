@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-booking-service-to-postgres-booking
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres-booking
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: booking-service
+      ports:
+        - port: 5432

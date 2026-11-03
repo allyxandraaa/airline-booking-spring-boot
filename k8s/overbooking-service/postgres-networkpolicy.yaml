@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-overbooking-service-to-postgres-overbooking
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres-overbooking
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: overbooking-service
+      ports:
+        - port: 5432

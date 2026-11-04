@@ -108,3 +108,21 @@
 - #65: передача `traceparent` через outbox у `booking-service`. При збереженні `OutboxRecord` фіксується контекст поточного HTTP-спана, а `PollingOutboxScheduler` відновлює його перед відправкою, тому продюсерський спан стає частиною трейса запиту, а не окремим трейсом.
 - #66: те саме для `payment-service`: `OutboxEvent` зберігає `traceparent` спана слухача, `OutboxRelay` відновлює його перед публікацією результату в `payment-events`. Клас `OutboxTracing` і юніт-тест на запис і відновлення на реальному OpenTelemetry SDK.
 - #67: `k8s/monitoring/grafana-values.yaml` з джерелами Tempo і Loki: зі спана відкриваються логи з тим самим `traceId`, а поле `traceId` у рядку логу Loki є посиланням на трейс у Tempo.
+
+## Групове завдання 8
+
+### Малій Олександра Михайлівна
+
+Мережева ізоляція кластера та звіт:
+- #81: Ingress-контролер ingress-nginx і `k8s/ingress/ingress.yaml` з маршрутами до п'яти сервісів.
+- #82: політика `default-deny-ingress`, яка забороняє весь вхідний трафік у namespace `default`.
+- #83: `networkpolicy.yaml` у кожного сервісу: трафік приймається лише від Ingress-контролера.
+- #84: `postgres-networkpolicy.yaml`: кожна база приймає з'єднання лише від свого сервісу.
+- #88: дозволи для наявних зв'язків під Default Deny: сервіси між собою і Prometheus (`networkpolicy-internal.yaml`), Kafka, `otel-collector`, Tempo і Loki.
+- #87: звіт `docs/SECURITY_REPORT.md` зі скриншотами, мапою дозволених зв'язків і трьома сценаріями збою.
+
+### Говорищева Вероніка Максимівна
+
+Обмеження привілеїв подів:
+- #85: `securityContext` у Deployment п'яти сервісів: запуск від користувача 10001 (як `USER` у Dockerfile), `runAsNonRoot`, заборона ескалації привілеїв, файлова система лише для читання з `emptyDir` у `/tmp` для Spring Boot, без автоматичного токена ServiceAccount.
+- #86: те саме для StatefulSet п'яти баз Postgres: користувач 70 з `fsGroup` для диска даних, `emptyDir` у `/tmp` і `/var/run/postgresql` під тимчасові файли й сокет.

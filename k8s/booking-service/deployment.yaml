@@ -12,11 +12,22 @@ spec:
       labels:
         app: booking-service
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
       containers:
         - name: booking-service
           image: booking-service:1.0
           ports:
             - containerPort: 8082
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           envFrom:
             - configMapRef:
                 name: booking-service-config
@@ -42,3 +53,6 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8082
+      volumes:
+        - name: tmp
+          emptyDir: {}

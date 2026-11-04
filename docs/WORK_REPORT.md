@@ -108,3 +108,12 @@
 - #65: передача `traceparent` через outbox у `booking-service`. При збереженні `OutboxRecord` фіксується контекст поточного HTTP-спана, а `PollingOutboxScheduler` відновлює його перед відправкою, тому продюсерський спан стає частиною трейса запиту, а не окремим трейсом.
 - #66: те саме для `payment-service`: `OutboxEvent` зберігає `traceparent` спана слухача, `OutboxRelay` відновлює його перед публікацією результату в `payment-events`. Клас `OutboxTracing` і юніт-тест на запис і відновлення на реальному OpenTelemetry SDK.
 - #67: `k8s/monitoring/grafana-values.yaml` з джерелами Tempo і Loki: зі спана відкриваються логи з тим самим `traceId`, а поле `traceId` у рядку логу Loki є посиланням на трейс у Tempo.
+
+## Групове завдання 8
+
+### Говорищева Вероніка Максимівна
+
+Обмеження привілеїв подів і звіт про безпеку:
+- #85: `securityContext` у Deployment п'яти сервісів: запуск від користувача 10001 (як `USER` у Dockerfile), `runAsNonRoot`, заборона ескалації привілеїв, файлова система лише для читання з `emptyDir` у `/tmp` для Spring Boot, без автоматичного токена ServiceAccount.
+- #86: те саме для StatefulSet п'яти баз Postgres: користувач 70 з `fsGroup` для диска даних, `emptyDir` у `/tmp` і `/var/run/postgresql` під тимчасові файли й сокет.
+- #87: звіт `docs/SECURITY_REPORT.md`: ризики й механізми захисту, таблиці Ingress і NetworkPolicy, параметри `securityContext`, результати перевірки та три сценарії виходу кластера з ладу зі способами усунення.

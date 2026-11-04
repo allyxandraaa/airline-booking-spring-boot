@@ -12,11 +12,22 @@ spec:
       labels:
         app: flight-service
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
       containers:
         - name: flight-service
           image: flight-service:1.0
           ports:
             - containerPort: 8081
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           envFrom:
             - configMapRef:
                 name: flight-service-config
@@ -42,3 +53,6 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8081
+      volumes:
+        - name: tmp
+          emptyDir: {}

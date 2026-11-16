@@ -1,0 +1,43 @@
+syntax = "proto3";
+package airline.flight.v1;
+
+import "airline/common/v1/money.proto";
+
+option java_package = "com.example.grpc.flight.v1";
+option java_multiple_files = true;
+
+enum TicketClass {
+  TICKET_CLASS_UNSPECIFIED = 0;
+  TICKET_CLASS_ECONOMY = 1;
+  TICKET_CLASS_BUSINESS = 2;
+}
+
+service FlightService {
+  rpc GetPrice(GetPriceRequest) returns (GetPriceResponse);
+  rpc ReserveSeat(ReserveSeatRequest) returns (ReserveSeatResponse);
+  rpc ReleaseSeat(ReleaseSeatRequest) returns (ReleaseSeatResponse);
+}
+
+message GetPriceRequest {
+  string flight_id = 1;
+  TicketClass ticket_class = 2;
+}
+
+message GetPriceResponse {
+  airline.common.v1.Money price = 1;
+}
+
+message ReserveSeatRequest {
+  string flight_id = 1;
+  TicketClass ticket_class = 2;
+}
+
+message ReserveSeatResponse {
+  string reservation_id = 1;
+}
+
+message ReleaseSeatRequest {
+  string reservation_id = 1;
+}
+
+message ReleaseSeatResponse {}

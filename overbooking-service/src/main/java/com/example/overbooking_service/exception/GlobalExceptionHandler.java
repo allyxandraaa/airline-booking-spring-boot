@@ -1,5 +1,6 @@
 package com.example.overbooking_service.exception;
 
+import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -42,8 +43,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				"Необхідний зовнішній сервіс тимчасово недоступний");
 	}
 
+	@ExceptionHandler(StatusRuntimeException.class)
+	public ProblemDetail handleGrpcFailure(StatusRuntimeException ex) {
+		return switch (ex.getStatus().getCode()) {
+			case UNAVAILABLE, DEADLINE_EXCEEDED -> handleDependencyUnavailable(ex);
+			default -> handleDependencyRejected(ex);
+		};
+	}
+
 	@ExceptionHandler(HttpClientErrorException.class)
-	public ProblemDetail handleDependencyRejected(HttpClientErrorException ex) {
+	public ProblemDetail handleDependencyRejected(Exception ex) {
 		log.warn("Dependency rejected the request: {}", ex.toString());
 		return problem(HttpStatus.BAD_GATEWAY, "Помилка шлюзу",
 				"Зовнішній сервіс відхилив запит");

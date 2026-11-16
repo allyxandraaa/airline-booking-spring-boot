@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /workspace
 
 COPY gradlew .
@@ -10,7 +10,7 @@ COPY src ./src
 RUN ./gradlew clean build -x test --no-daemon
 RUN java -Djarmode=tools -jar build/libs/*.jar extract --layers --launcher --destination extracted
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 RUN addgroup --system --gid 10001 spring \

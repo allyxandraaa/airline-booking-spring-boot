@@ -1,0 +1,38 @@
+syntax = "proto3";
+package airline.payment.v1;
+
+import "airline/common/v1/money.proto";
+
+option java_package = "com.example.grpc.payment.v1";
+option java_multiple_files = true;
+
+enum RefundStatus {
+  REFUND_STATUS_UNSPECIFIED = 0;
+  REFUND_STATUS_SUCCESS = 1;
+  REFUND_STATUS_DECLINED = 2;
+}
+
+service PaymentService {
+  rpc RefundBatch(stream RefundItem) returns (RefundSummary);
+  rpc ProcessRefunds(stream RefundItem) returns (stream RefundResult);
+}
+
+message RefundItem {
+  string booking_id = 1;
+  airline.common.v1.Money amount = 2;
+  string idempotency_key = 3;
+}
+
+message RefundResult {
+  string booking_id = 1;
+  string payment_id = 2;
+  airline.common.v1.Money amount = 3;
+  RefundStatus status = 4;
+}
+
+message RefundSummary {
+  int32 total = 1;
+  int32 succeeded = 2;
+  int32 declined = 3;
+  airline.common.v1.Money refunded_amount = 4;
+}

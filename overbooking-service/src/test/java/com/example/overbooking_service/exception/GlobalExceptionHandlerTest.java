@@ -91,7 +91,8 @@ class GlobalExceptionHandlerTest {
 
 	@Test
 	void downstreamFailuresReturn503ProblemDetail() throws Exception {
-		for (String path : new String[]{"/test/timeout", "/test/server-error", "/test/circuit-open", "/test/bulkhead-full"}) {
+		for (String path : new String[]{"/test/timeout", "/test/server-error", "/test/circuit-open", "/test/bulkhead-full",
+				"/test/grpc-unavailable", "/test/grpc-deadline"}) {
 			mockMvc.perform(get(path))
 					.andExpect(status().isServiceUnavailable())
 					.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
@@ -104,12 +105,14 @@ class GlobalExceptionHandlerTest {
 
 	@Test
 	void downstreamClientErrorReturns502ProblemDetail() throws Exception {
-		mockMvc.perform(get("/test/client-error"))
-				.andExpect(status().isBadGateway())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-				.andExpect(jsonPath("$.status").value(502))
-				.andExpect(jsonPath("$.title").value("Помилка шлюзу"))
-				.andExpect(jsonPath("$.detail").value("Зовнішній сервіс відхилив запит"))
-				.andExpect(jsonPath("$.timestamp").exists());
+		for (String path : new String[]{"/test/client-error", "/test/grpc-not-found"}) {
+			mockMvc.perform(get(path))
+					.andExpect(status().isBadGateway())
+					.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+					.andExpect(jsonPath("$.status").value(502))
+					.andExpect(jsonPath("$.title").value("Помилка шлюзу"))
+					.andExpect(jsonPath("$.detail").value("Зовнішній сервіс відхилив запит"))
+					.andExpect(jsonPath("$.timestamp").exists());
+		}
 	}
 }

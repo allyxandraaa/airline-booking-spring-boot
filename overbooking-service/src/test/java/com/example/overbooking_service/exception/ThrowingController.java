@@ -6,6 +6,7 @@ import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.grpc.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -55,6 +56,21 @@ class ThrowingController {
 	@GetMapping("/bulkhead-full")
 	void bulkheadFull() {
 		throw BulkheadFullException.createBulkheadFullException(Bulkhead.ofDefaults("test"));
+	}
+
+	@GetMapping("/grpc-unavailable")
+	void grpcUnavailable() {
+		throw Status.UNAVAILABLE.asRuntimeException();
+	}
+
+	@GetMapping("/grpc-deadline")
+	void grpcDeadline() {
+		throw Status.DEADLINE_EXCEEDED.asRuntimeException();
+	}
+
+	@GetMapping("/grpc-not-found")
+	void grpcNotFound() {
+		throw Status.NOT_FOUND.asRuntimeException();
 	}
 
 	@GetMapping("/client-error")

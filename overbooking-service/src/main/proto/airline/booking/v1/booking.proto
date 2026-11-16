@@ -1,0 +1,30 @@
+syntax = "proto3";
+package airline.booking.v1;
+
+import "airline/common/v1/money.proto";
+
+option java_package = "com.example.grpc.booking.v1";
+option java_multiple_files = true;
+
+enum BookingStatus {
+  BOOKING_STATUS_UNSPECIFIED = 0;
+  BOOKING_STATUS_PENDING = 1;
+  BOOKING_STATUS_SEAT_RESERVED = 2;
+  BOOKING_STATUS_CONFIRMED = 3;
+  BOOKING_STATUS_FAILED = 4;
+  BOOKING_STATUS_BUMPED = 5;
+}
+
+service BookingService {
+  rpc StreamBookings(StreamBookingsRequest) returns (stream Booking);
+}
+
+message StreamBookingsRequest {
+  repeated string booking_ids = 1;
+}
+
+message Booking {
+  string id = 1;
+  airline.common.v1.Money price_at_booking = 2;
+  BookingStatus status = 3;
+}

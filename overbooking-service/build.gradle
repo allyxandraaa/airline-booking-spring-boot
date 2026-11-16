@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.1.1'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.google.protobuf' version '0.10.1'
 }
 
 group = 'com.example'
@@ -9,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -28,6 +29,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-restclient'
 	implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 	implementation 'io.github.resilience4j:resilience4j-spring-boot4:2.4.0'
+	implementation 'org.springframework.boot:spring-boot-starter-grpc-client'
+	implementation 'io.grpc:grpc-protobuf'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.wiremock.integrations:wiremock-spring-boot:4.4.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
@@ -35,6 +38,24 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:${dependencyManagement.importedProperties['protobuf-java.version']}"
+	}
+	plugins {
+		grpc {
+			artifact = "io.grpc:protoc-gen-grpc-java:${dependencyManagement.importedProperties['grpc-java.version']}"
+		}
+	}
+	generateProtoTasks {
+		all().configureEach {
+			plugins {
+				grpc {}
+			}
+		}
+	}
 }
 
 tasks.named('test') {

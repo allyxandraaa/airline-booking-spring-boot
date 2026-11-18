@@ -22,6 +22,7 @@ spec:
           image: flight-service:1.0
           ports:
             - containerPort: 8081
+            - containerPort: 9081
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

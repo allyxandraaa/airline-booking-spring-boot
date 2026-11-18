@@ -15,6 +15,7 @@ spec:
               app: overbooking-service
       ports:
         - port: 8083
+        - port: 9083
     - from:
         - namespaceSelector:
             matchLabels:

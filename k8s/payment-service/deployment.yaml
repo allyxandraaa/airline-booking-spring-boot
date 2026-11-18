@@ -22,6 +22,7 @@ spec:
           image: payment-service:1.0
           ports:
             - containerPort: 8083
+            - containerPort: 9083
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

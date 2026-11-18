@@ -22,6 +22,7 @@ spec:
           image: booking-service:1.0
           ports:
             - containerPort: 8082
+            - containerPort: 9082
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

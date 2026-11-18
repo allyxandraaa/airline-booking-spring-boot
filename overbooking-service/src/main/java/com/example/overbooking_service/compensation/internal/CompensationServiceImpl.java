@@ -5,6 +5,7 @@ import com.example.overbooking_service.client.dto.BatchRequest;
 import com.example.overbooking_service.client.dto.BookingDto;
 import com.example.overbooking_service.compensation.CompensationResult;
 import com.example.overbooking_service.compensation.CompensationService;
+import com.example.overbooking_service.compensation.CompensationSummary;
 import com.example.overbooking_service.exception.BookingsNotFoundException;
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -36,13 +37,18 @@ class CompensationServiceImpl implements CompensationService {
 	public List<CompensationResult> compensate(List<UUID> bookingIds) {
 		LongTaskTimer.Sample sample = compensationTimer.start();
 		try {
-			return doCompensate(bookingIds);
+			return refundGateway.refundAll(loadOrders(bookingIds));
 		} finally {
 			sample.stop();
 		}
 	}
 
-	private List<CompensationResult> doCompensate(List<UUID> bookingIds) {
+	@Override
+	public CompensationSummary summarize(List<UUID> bookingIds) {
+		return refundGateway.refundBatch(loadOrders(bookingIds));
+	}
+
+	private List<RefundOrder> loadOrders(List<UUID> bookingIds) {
 		List<UUID> ids = bookingIds.stream().distinct().toList();
 		Map<UUID, BookingDto> bookings = bookingClient.getBookingsByIds(new BatchRequest(ids)).stream()
 				.collect(Collectors.toMap(BookingDto::id, Function.identity(), (first, second) -> first));
@@ -52,9 +58,9 @@ class CompensationServiceImpl implements CompensationService {
 			throw new BookingsNotFoundException(missing);
 		}
 
-		return refundGateway.refundAll(ids.stream()
+		return ids.stream()
 				.map(id -> new RefundOrder(id, bookings.get(id).priceAtBooking(), idempotencyKey(id)))
-				.toList());
+				.toList();
 	}
 
 	private String idempotencyKey(UUID bookingId) {

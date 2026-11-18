@@ -88,68 +88,77 @@ spring.grpc.client.channel.payment.service-config.method[0].retry.retryable-stat
 
 ## 4. Чотири типи викликів
 
-Нижче для кожного типу показано, який запит його запускає, фактичну відповідь системи та команду `grpcurl` для прямого виклику.
+Кожен тип викликано напряму через `grpcurl` з імпортом `.proto`. `grpcurl` запускався з образу `fullstorydev/grpcurl`, тому адреса сервера на скріншотах `host.docker.internal`, а тіло запиту читається з файлу й передається через стандартний ввід (`-d '@'`):
+
+```powershell
+function grpcurl { $input | docker run --rm -i -v "${PWD}:/work" -w /work fullstorydev/grpcurl @args }
+```
+
+Дані для викликів: один рейс і три підтверджені бронювання з цінами 108, 108.86 і 109.73 (ціна зростає разом із заповненістю рейсу).
 
 ### 4.1. Unary: `GetPrice`
 
-`POST /api/v1/bookings` викликає `GetPrice` і `ReserveSeat`. Три бронювання на один рейс отримали ціни 108, 108.86 і 109.73: ціна зростає разом із заповненістю, а статус після оплати `CONFIRMED`.
+Один запит, одна відповідь. Цей виклик робить `booking-service` під час `POST /api/v1/bookings`, разом із `ReserveSeat`.
 
-```bash
-grpcurl -plaintext -import-path flight-service/src/main/proto -proto airline/flight/v1/flight.proto \
-  -d '{"flight_id":"<flightId>","ticket_class":"TICKET_CLASS_ECONOMY"}' \
-  localhost:9081 airline.flight.v1.FlightService/GetPrice
+```powershell
+Get-Content $d\get-price.json | grpcurl -plaintext -import-path flight-service/src/main/proto -proto airline/flight/v1/flight.proto -d '@' host.docker.internal:9081 airline.flight.v1.FlightService/GetPrice
 ```
+
+Відповідь: ціна наступного місця 110.59 у вигляді `Money` (`units: 110`, `nanos: 590000000`).
 
 ![Unary: запит і відповідь GetPrice](screenshots/grpc-01-unary-get-price.png)
 
 ### 4.2. Server streaming: `StreamBookings`
 
-`POST /api/v1/overbooking/compensations` одним викликом `StreamBookings` отримує потік бронювань: по одному повідомленню на кожне знайдене. Відсутні бронювання в потік не потрапляють, і сервіс відповідає `404` з переліком відсутніх id.
+Один запит зі списком id, у відповідь потік: по одному повідомленню `Booking` на кожне знайдене бронювання. Відсутні бронювання в потік не потрапляють, і `overbooking-service` у такому разі відповідає `404` з переліком відсутніх id.
 
-```bash
-grpcurl -plaintext -import-path booking-service/src/main/proto -proto airline/booking/v1/booking.proto \
-  -d '{"booking_ids":["<id1>","<id2>","<id3>"]}' \
-  localhost:9082 airline.booking.v1.BookingService/StreamBookings
+```powershell
+Get-Content $d\stream-bookings.json | grpcurl -plaintext -import-path booking-service/src/main/proto -proto airline/booking/v1/booking.proto -d '@' host.docker.internal:9082 airline.booking.v1.BookingService/StreamBookings
 ```
+
+На скріншоті тіло запиту з трьома id і три повідомлення у відповідь зі статусом `BOOKING_STATUS_CONFIRMED`.
 
 ![Server streaming: три повідомлення Booking у відповідь](screenshots/grpc-02-server-streaming.png)
 
 ### 4.3. Client streaming: `RefundBatch`
 
-`POST /api/v1/overbooking/compensations/summary` надсилає потік `RefundItem` і отримує один підсумок. Фактична відповідь для трьох бронювань:
+Клієнт надсилає потік із трьох `RefundItem` і отримує один `RefundSummary`.
+
+```powershell
+Get-Content $d\refund-items.json | grpcurl -plaintext -import-path payment-service/src/main/proto -proto airline/payment/v1/payment.proto -d '@' host.docker.internal:9083 airline.payment.v1.PaymentService/RefundBatch
+```
+
+Відповідь: `total: 3`, `succeeded: 3`, сума повернень 326.59. Поле `declined` у виводі відсутнє, бо дорівнює нулю, а proto3 не друкує значення за замовчуванням.
+
+Той самий виклик через REST, `POST /api/v1/overbooking/compensations/summary`, повернув:
 
 ```json
 { "total": 3, "succeeded": 3, "declined": 0, "refundedAmount": 326.59 }
-```
-
-Повторний запит повернув той самий підсумок, а в `payment-service` для кожного бронювання лишився один платіж `REFUND`: ключ ідемпотентності той самий, що й в основній компенсації.
-
-```bash
-grpcurl -plaintext -import-path payment-service/src/main/proto -proto airline/payment/v1/payment.proto \
-  -d @ localhost:9083 airline.payment.v1.PaymentService/RefundBatch <<EOF
-{"booking_id":"<id1>","amount":{"units":108},"idempotency_key":"<key1>"}
-{"booking_id":"<id2>","amount":{"units":108,"nanos":860000000},"idempotency_key":"<key2>"}
-{"booking_id":"<id3>","amount":{"units":109,"nanos":730000000},"idempotency_key":"<key3>"}
-EOF
 ```
 
 ![Client streaming: три RefundItem і один RefundSummary](screenshots/grpc-03-client-streaming.png)
 
 ### 4.4. Bidirectional streaming: `ProcessRefunds`
 
-`POST /api/v1/overbooking/compensations` надсилає потік `RefundItem` і на кожен отримує `RefundResult`. Фактична відповідь:
+Клієнт надсилає потік `RefundItem`, сервер на кожен одразу відповідає `RefundResult`, порядок відповідей збігається з порядком запитів.
+
+```powershell
+Get-Content $d\refund-items.json | grpcurl -plaintext -import-path payment-service/src/main/proto -proto airline/payment/v1/payment.proto -d '@' host.docker.internal:9083 airline.payment.v1.PaymentService/ProcessRefunds
+```
+
+Той самий виклик через REST, `POST /api/v1/overbooking/compensations`, повернув:
 
 ```json
 [
-  { "bookingId": "de02e436-fcf9-444c-949a-cd6d35f1f533", "amount": 108, "status": "COMPLETED" },
-  { "bookingId": "2a242927-ae47-4f00-922e-71f58a19b955", "amount": 108.86, "status": "COMPLETED" },
-  { "bookingId": "49bbce38-12c6-43f3-8f33-48538449c60e", "amount": 109.73, "status": "COMPLETED" }
+  { "bookingId": "83174baf-6974-4a8a-ab45-d5e1852503ec", "amount": 108, "status": "COMPLETED" },
+  { "bookingId": "e7b67984-c804-4caa-b1e2-8f30b66244ae", "amount": 108.86, "status": "COMPLETED" },
+  { "bookingId": "93b3833a-51a9-4b58-9ada-466670673710", "amount": 109.73, "status": "COMPLETED" }
 ]
 ```
 
-Команда `grpcurl` така сама, як для `RefundBatch`, з методом `airline.payment.v1.PaymentService/ProcessRefunds`: у відповідь приходять три `RefundResult` у порядку запитів.
-
 ![Bidirectional: потік RefundItem і потік RefundResult](screenshots/grpc-04-bidirectional.png)
+
+`RefundBatch` і `ProcessRefunds` викликано для тих самих бронювань з тими самими ключами ідемпотентності, що й компенсація через REST. Після всіх викликів у `payment-service` для кожного бронювання лишився один платіж `CHARGE` і один `REFUND`: повтори не створили нових платежів.
 
 ## 5. Експерименти з відмовою
 

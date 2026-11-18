@@ -14,7 +14,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,8 +36,8 @@ class CompensationServiceTest {
 			assertThat(timer().activeTasks()).isEqualTo(1);
 			return List.of(new BookingDto(id, new BigDecimal("120.50"), "BUMPED"));
 		});
-		when(refundGateway.refund(any(), any(), anyString()))
-				.thenReturn(new CompensationResult(id, new BigDecimal("120.50"), "COMPLETED"));
+		when(refundGateway.refundAll(anyList()))
+				.thenReturn(List.of(new CompensationResult(id, new BigDecimal("120.50"), "COMPLETED")));
 
 		service.compensate(List.of(id));
 

@@ -1,11 +1,9 @@
 package com.example.overbooking_service.compensation.internal;
 
 import com.example.overbooking_service.client.BookingClient;
-import com.example.overbooking_service.client.PaymentClient;
 import com.example.overbooking_service.client.dto.BatchRequest;
 import com.example.overbooking_service.client.dto.BookingDto;
-import com.example.overbooking_service.client.dto.RefundRequest;
-import com.example.overbooking_service.client.dto.RefundResponse;
+import com.example.overbooking_service.compensation.CompensationResult;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -37,8 +35,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CompensationController.class)
-@Import({CompensationServiceImpl.class, RefundGatewayImpl.class, SimpleMeterRegistry.class})
+@Import({CompensationServiceImpl.class, SimpleMeterRegistry.class})
 class CompensationControllerTest {
+
+	private static final BigDecimal AMOUNT = new BigDecimal("120.50");
 
 	@Autowired
 	MockMvc mockMvc;
@@ -47,19 +47,19 @@ class CompensationControllerTest {
 	BookingClient bookingClient;
 
 	@MockitoBean
-	PaymentClient paymentClient;
+	RefundGateway refundGateway;
 
 	@Test
-	void threeBookingsUseOneBatchCallAndThreeRefunds() throws Exception {
+	void threeBookingsUseOneBatchCallAndOneRefundStream() throws Exception {
 		List<UUID> ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 		when(bookingClient.getBookingsByIds(new BatchRequest(ids))).thenReturn(ids.stream()
-				.map(id -> new BookingDto(id, new BigDecimal("120.50"), "BUMPED"))
+				.map(id -> new BookingDto(id, AMOUNT, "BUMPED"))
 				.toList());
-		when(paymentClient.refund(anyString(), any())).thenAnswer(invocation -> {
-			RefundRequest request = invocation.getArgument(1);
-			String status = request.bookingId().equals(ids.get(2)) ? "FAILED" : "SUCCESS";
-			return new RefundResponse(UUID.randomUUID(), request.bookingId(), request.amount(), status);
-		});
+		List<RefundOrder> orders = ids.stream().map(id -> new RefundOrder(id, AMOUNT, key(id))).toList();
+		when(refundGateway.refundAll(orders)).thenReturn(List.of(
+				new CompensationResult(ids.get(0), AMOUNT, "COMPLETED"),
+				new CompensationResult(ids.get(1), AMOUNT, "COMPLETED"),
+				new CompensationResult(ids.get(2), AMOUNT, "PENDING")));
 
 		mockMvc.perform(compensations(ids))
 				.andExpect(status().isOk())
@@ -70,9 +70,7 @@ class CompensationControllerTest {
 				.andExpect(jsonPath("$[2].status").value("PENDING"));
 
 		verify(bookingClient, times(1)).getBookingsByIds(any());
-		verify(paymentClient, times(3)).refund(anyString(), any());
-		String key = UUID.nameUUIDFromBytes(("refund:" + ids.get(0)).getBytes(StandardCharsets.UTF_8)).toString();
-		verify(paymentClient).refund(key, new RefundRequest(ids.get(0), new BigDecimal("120.50")));
+		verify(refundGateway, times(1)).refundAll(anyList());
 	}
 
 	@Test
@@ -88,7 +86,7 @@ class CompensationControllerTest {
 				.andExpect(jsonPath("$.status").value(404))
 				.andExpect(jsonPath("$.detail").value(containsString(missing.toString())))
 				.andExpect(jsonPath("$.timestamp").exists());
-		verifyNoInteractions(paymentClient);
+		verifyNoInteractions(refundGateway);
 	}
 
 	@Test
@@ -105,6 +103,10 @@ class CompensationControllerTest {
 				.andExpect(header().string("X-Correlation-Id", "abc"));
 		mockMvc.perform(compensations(List.of()))
 				.andExpect(header().string("X-Correlation-Id", matchesPattern("[0-9a-f-]{36}")));
+	}
+
+	private static String key(UUID bookingId) {
+		return UUID.nameUUIDFromBytes(("refund:" + bookingId).getBytes(StandardCharsets.UTF_8)).toString();
 	}
 
 	private MockHttpServletRequestBuilder compensations(List<UUID> ids) {

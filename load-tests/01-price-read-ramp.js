@@ -26,7 +26,7 @@ export function setup() {
   return { flightId: createFlight(`R${Date.now() % 100000}`, 100000, 10000) };
 }
 
-export default function (data) {
+export default function runScenario(data) {
   const ticketClass = Math.random() < 0.7 ? 'ECONOMY' : 'BUSINESS';
   const res = http.get(`${FLIGHT_URL}/api/v1/flights/${data.flightId}/price?ticketClass=${ticketClass}`, {
     tags: { name: 'GET /flights/{id}/price' },

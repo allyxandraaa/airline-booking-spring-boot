@@ -1,10 +1,13 @@
 package com.example.booking_service.integration;
 
 import com.example.booking_service.booking.TicketClass;
-import com.example.booking_service.integration.client.FlightClient;
-import com.example.booking_service.integration.client.dto.ReserveSeatRequest;
+import com.example.booking_service.grpc.MoneyMapper;
+import com.example.grpc.flight.v1.FlightServiceGrpc;
+import com.example.grpc.flight.v1.GetPriceRequest;
+import com.example.grpc.flight.v1.ReleaseSeatRequest;
+import com.example.grpc.flight.v1.ReserveSeatRequest;
+import io.grpc.StatusRuntimeException;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -12,34 +15,53 @@ import java.util.UUID;
 @Component
 class FlightGatewayImpl implements FlightGateway {
 
-	private final FlightClient flightClient;
+	private final FlightServiceGrpc.FlightServiceBlockingStub flightStub;
 
-	FlightGatewayImpl(FlightClient flightClient) {
-		this.flightClient = flightClient;
+	FlightGatewayImpl(FlightServiceGrpc.FlightServiceBlockingStub flightStub) {
+		this.flightStub = flightStub;
 	}
 
 	@Override
 	public BigDecimal getPrice(UUID flightId, TicketClass ticketClass) {
 		try {
-			return flightClient.getPrice(flightId, ticketClass).price();
-		} catch (HttpClientErrorException.NotFound e) {
-			throw new FlightNotFoundException(flightId);
+			return MoneyMapper.fromProto(flightStub.getPrice(GetPriceRequest.newBuilder()
+					.setFlightId(flightId.toString())
+					.setTicketClass(toProto(ticketClass))
+					.build()).getPrice());
+		} catch (StatusRuntimeException e) {
+			throw translate(e, flightId);
 		}
 	}
 
 	@Override
 	public UUID reserveSeat(UUID flightId, TicketClass ticketClass) {
 		try {
-			return flightClient.reserveSeat(flightId, new ReserveSeatRequest(ticketClass)).reservationId();
-		} catch (HttpClientErrorException.NotFound e) {
-			throw new FlightNotFoundException(flightId);
-		} catch (HttpClientErrorException.Conflict e) {
-			throw new SeatUnavailableException("Немає вільних місць на рейсі " + flightId);
+			return UUID.fromString(flightStub.reserveSeat(ReserveSeatRequest.newBuilder()
+					.setFlightId(flightId.toString())
+					.setTicketClass(toProto(ticketClass))
+					.build()).getReservationId());
+		} catch (StatusRuntimeException e) {
+			throw translate(e, flightId);
 		}
 	}
 
 	@Override
 	public void releaseSeat(UUID reservationId) {
-		flightClient.releaseSeat(reservationId);
+		flightStub.releaseSeat(ReleaseSeatRequest.newBuilder().setReservationId(reservationId.toString()).build());
+	}
+
+	private static RuntimeException translate(StatusRuntimeException e, UUID flightId) {
+		return switch (e.getStatus().getCode()) {
+			case NOT_FOUND -> new FlightNotFoundException(flightId);
+			case FAILED_PRECONDITION -> new SeatUnavailableException("Немає вільних місць на рейсі " + flightId);
+			default -> e;
+		};
+	}
+
+	private static com.example.grpc.flight.v1.TicketClass toProto(TicketClass ticketClass) {
+		return switch (ticketClass) {
+			case ECONOMY -> com.example.grpc.flight.v1.TicketClass.TICKET_CLASS_ECONOMY;
+			case BUSINESS -> com.example.grpc.flight.v1.TicketClass.TICKET_CLASS_BUSINESS;
+		};
 	}
 }

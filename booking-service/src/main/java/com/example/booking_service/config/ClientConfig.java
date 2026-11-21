@@ -1,6 +1,5 @@
 package com.example.booking_service.config;
 
-import com.example.booking_service.integration.client.FlightClient;
 import com.example.booking_service.integration.client.PassengerClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,12 +17,6 @@ public class ClientConfig {
 
 	private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(2);
 	private static final Duration READ_TIMEOUT = Duration.ofSeconds(3);
-
-	@Bean
-	public FlightClient flightClient(RestClient.Builder builder,
-									 @Value("${flight-service.url}") String baseUrl) {
-		return createClient(builder, baseUrl, FlightClient.class);
-	}
 
 	@Bean
 	public PassengerClient passengerClient(RestClient.Builder builder,

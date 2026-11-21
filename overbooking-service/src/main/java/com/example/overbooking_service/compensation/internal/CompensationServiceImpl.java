@@ -52,9 +52,9 @@ class CompensationServiceImpl implements CompensationService {
 			throw new BookingsNotFoundException(missing);
 		}
 
-		return ids.stream()
-				.map(id -> refundGateway.refund(id, bookings.get(id).priceAtBooking(), idempotencyKey(id)))
-				.toList();
+		return refundGateway.refundAll(ids.stream()
+				.map(id -> new RefundOrder(id, bookings.get(id).priceAtBooking(), idempotencyKey(id)))
+				.toList());
 	}
 
 	private String idempotencyKey(UUID bookingId) {

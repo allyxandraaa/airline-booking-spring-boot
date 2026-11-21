@@ -14,19 +14,22 @@ import java.util.UUID;
 @Component
 public class CorrelationIdFilter extends OncePerRequestFilter {
 
+	public static final String HEADER = "X-Correlation-Id";
+	public static final String MDC_KEY = "correlationId";
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 									FilterChain filterChain) throws ServletException, IOException {
-		String correlationId = request.getHeader(CorrelationIdInterceptor.HEADER);
+		String correlationId = request.getHeader(HEADER);
 		if (correlationId == null || correlationId.isBlank()) {
 			correlationId = UUID.randomUUID().toString();
 		}
-		MDC.put(CorrelationIdInterceptor.MDC_KEY, correlationId);
-		response.setHeader(CorrelationIdInterceptor.HEADER, correlationId);
+		MDC.put(MDC_KEY, correlationId);
+		response.setHeader(HEADER, correlationId);
 		try {
 			filterChain.doFilter(request, response);
 		} finally {
-			MDC.remove(CorrelationIdInterceptor.MDC_KEY);
+			MDC.remove(MDC_KEY);
 		}
 	}
 }

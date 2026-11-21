@@ -20,7 +20,7 @@ public class ClientConfig {
 
 	@Bean
 	public PassengerClient passengerClient(RestClient.Builder builder,
-										   @Value("${customer-service.url}") String baseUrl) {
+										   @Value("${passenger-service.url}") String baseUrl) {
 		return createClient(builder, baseUrl, PassengerClient.class);
 	}
 

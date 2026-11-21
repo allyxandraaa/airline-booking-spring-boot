@@ -20,7 +20,7 @@
 
 | Сервіс | Відповідальність |
 |---|---|
-| **Customer Service** | Дані пасажирів та їхніх (емульованих) способів оплати |
+| **Passenger Service** | Дані пасажирів та їхніх (емульованих) способів оплати |
 | **Flight Service** | Рейси, місткість, розрахунок динамічної ціни |
 | **Booking Service** | Оркестрація бронювання: резервація місця, фіксація ціни, ініціювання оплати |
 | **Payment Service** | Симуляція оплати та повернень коштів |
@@ -35,7 +35,7 @@ cd flight-service
 ./gradlew bootRun
 ```
 
-Аналогічно для `booking-service`, `customer-service`, `payment-service`, `overbooking-service`.
+Аналогічно для `booking-service`, `passenger-service`, `payment-service`, `overbooking-service`.
 
 ## Kafka
 

@@ -42,7 +42,7 @@ data:
       filelog:
         # Формат шляху: /var/log/pods/<namespace>_<pod>_<uid>/<container>/<restart>.log
         include:
-          - /var/log/pods/*_customer-service-*/customer-service/*.log
+          - /var/log/pods/*_passenger-service-*/passenger-service/*.log
           - /var/log/pods/*_flight-service-*/flight-service/*.log
           - /var/log/pods/*_booking-service-*/booking-service/*.log
           - /var/log/pods/*_payment-service-*/payment-service/*.log

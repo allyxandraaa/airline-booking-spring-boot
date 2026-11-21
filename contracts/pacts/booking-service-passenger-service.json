@@ -1,0 +1,100 @@
+{
+  "consumer": {
+    "name": "booking-service"
+  },
+  "interactions": [
+    {
+      "comments": {
+        "testname": "com.example.booking_service.integration.PassengerServicePactConsumerTest.gatewayMapsNotFoundToPassengerNotFound(MockServer)",
+        "text": [
+
+        ]
+      },
+      "description": "a payment method request for an unknown passenger",
+      "key": "ce22278",
+      "pending": false,
+      "providerStates": [
+        {
+          "name": "passenger does not exist",
+          "params": {
+            "passengerId": "3b7c1d5e-9f20-4c6a-b8d1-62e0a4f95c37"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/passengers/3b7c1d5e-9f20-4c6a-b8d1-62e0a4f95c37/payment-method"
+      },
+      "response": {
+        "status": 404
+      },
+      "transport": "http",
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "comments": {
+        "testname": "com.example.booking_service.integration.PassengerServicePactConsumerTest.gatewayReadsPaymentMethodFromPassengerService(MockServer)",
+        "text": [
+
+        ]
+      },
+      "description": "a payment method request for an existing passenger",
+      "key": "a5cdd7c5",
+      "pending": false,
+      "providerStates": [
+        {
+          "name": "passenger exists",
+          "params": {
+            "passengerId": "3b7c1d5e-9f20-4c6a-b8d1-62e0a4f95c37",
+            "paymentMethodId": "a41e6f08-5d93-4b27-8c15-7f3d0e92b6a4"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/passengers/3b7c1d5e-9f20-4c6a-b8d1-62e0a4f95c37/payment-method"
+      },
+      "response": {
+        "body": {
+          "content": {
+            "paymentMethodId": "a41e6f08-5d93-4b27-8c15-7f3d0e92b6a4"
+          },
+          "contentType": "application/json",
+          "encoded": false
+        },
+        "headers": {
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "matchingRules": {
+          "body": {
+            "$.paymentMethodId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      },
+      "transport": "http",
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.7.7"
+    },
+    "pactSpecification": {
+      "version": "4.0"
+    }
+  },
+  "provider": {
+    "name": "passenger-service"
+  }
+}

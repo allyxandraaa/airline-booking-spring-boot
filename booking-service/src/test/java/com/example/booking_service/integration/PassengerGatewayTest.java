@@ -33,7 +33,7 @@ class PassengerGatewayTest {
 	}
 
 	@Test
-	void getPaymentMethodIdReturnsIdFromCustomerService() {
+	void getPaymentMethodIdReturnsIdFromPassengerService() {
 		UUID paymentMethodId = UUID.randomUUID();
 		wireMock.stubFor(get(urlPathEqualTo("/api/v1/passengers/" + passengerId + "/payment-method"))
 				.willReturn(aResponse().withHeader("Content-Type", "application/json")

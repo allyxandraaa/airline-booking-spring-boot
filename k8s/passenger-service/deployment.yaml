@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passenger-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: passenger-service
+  template:
+    metadata:
+      labels:
+        app: passenger-service
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      containers:
+        - name: passenger-service
+          image: passenger-service:1.0
+          ports:
+            - containerPort: 8085
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          envFrom:
+            - configMapRef:
+                name: passenger-service-config
+            - secretRef:
+                name: passenger-service-secret
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              memory: "512Mi"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+      volumes:
+        - name: tmp
+          emptyDir: {}

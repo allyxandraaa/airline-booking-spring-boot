@@ -62,12 +62,12 @@ class OutboxRelayTest {
 
 		assertThat(sent).isEqualTo(1);
 		assertThat(event.isProcessed()).isTrue();
-		ArgumentCaptor<ProducerRecord<String, PaymentProcessedEvent>> record =
+		ArgumentCaptor<ProducerRecord<String, PaymentProcessedEvent>> message =
 				ArgumentCaptor.forClass((Class) ProducerRecord.class);
-		verify(kafkaTemplate).send(record.capture());
-		assertThat(record.getValue().topic()).isEqualTo("payment-events");
-		assertThat(record.getValue().key()).isEqualTo(bookingId.toString());
-		assertThat(record.getValue().value()).isEqualTo(result);
+		verify(kafkaTemplate).send(message.capture());
+		assertThat(message.getValue().topic()).isEqualTo("payment-events");
+		assertThat(message.getValue().key()).isEqualTo(bookingId.toString());
+		assertThat(message.getValue().value()).isEqualTo(result);
 		verify(repository).save(event);
 	}
 

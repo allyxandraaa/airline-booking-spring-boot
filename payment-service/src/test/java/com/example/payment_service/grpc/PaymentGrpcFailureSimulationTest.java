@@ -74,11 +74,13 @@ class PaymentGrpcFailureSimulationTest {
 		assertThat(succeeded.values()).hasSize(1);
 	}
 
-	private static void send(StreamObserver<RefundItem> requests) {
+	private static boolean send(StreamObserver<RefundItem> requests) {
 		try {
 			requests.onNext(PaymentGrpcServiceTest.item("key", UUID.randomUUID().toString(), "10"));
 			requests.onCompleted();
-		} catch (IllegalStateException ignored) {
+			return true;
+		} catch (IllegalStateException _) {
+			return false;
 		}
 	}
 

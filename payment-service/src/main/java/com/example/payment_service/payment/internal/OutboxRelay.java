@@ -50,7 +50,7 @@ public class OutboxRelay {
 				tracing.call(event.getTraceparent(),
 						() -> kafkaTemplate.send(toRecord(event)).get(SEND_TIMEOUT_SECONDS, TimeUnit.SECONDS));
 			} catch (Exception e) {
-				log.warn("Outbox relay failed for event {}: {}", event.getId(), e.toString());
+				log.warn("Outbox relay failed for event {}: {}", event.getId(), e.getMessage());
 				return sent;
 			}
 			event.markProcessed();
@@ -62,12 +62,12 @@ public class OutboxRelay {
 
 	private ProducerRecord<String, PaymentProcessedEvent> toRecord(OutboxEvent event) {
 		PaymentProcessedEvent payload = jsonMapper.readValue(event.getPayload(), PaymentProcessedEvent.class);
-		ProducerRecord<String, PaymentProcessedEvent> record = new ProducerRecord<>(
+		ProducerRecord<String, PaymentProcessedEvent> message = new ProducerRecord<>(
 				KafkaTopicConfig.PAYMENT_EVENTS_TOPIC, event.getAggregateId().toString(), payload);
 		String correlationId = MDC.get("correlationId");
 		if (correlationId != null) {
-			record.headers().add("X-Correlation-Id", correlationId.getBytes(StandardCharsets.UTF_8));
+			message.headers().add("X-Correlation-Id", correlationId.getBytes(StandardCharsets.UTF_8));
 		}
-		return record;
+		return message;
 	}
 }

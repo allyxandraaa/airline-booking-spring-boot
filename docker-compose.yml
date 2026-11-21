@@ -140,6 +140,39 @@ services:
       postgres-overbooking:
         condition: service_healthy
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    env_file:
+      - ./keycloak/.env
+    environment:
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+    volumes:
+      - ./keycloak/airline-realm.json:/opt/keycloak/data/import/airline-realm.json:ro
+    ports:
+      - "8180:8080"
+
+  gateway-service:
+    build: ./gateway-service
+    env_file:
+      - ./gateway-service/.env
+    ports:
+      - "8090:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
 volumes:
   passenger-db-data:
   flight-db-data:

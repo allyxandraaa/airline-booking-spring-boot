@@ -8,6 +8,7 @@ import com.example.grpc.payment.v1.PaymentServiceGrpc;
 import com.example.grpc.payment.v1.RefundItem;
 import com.example.grpc.payment.v1.RefundResult;
 import com.example.grpc.payment.v1.RefundStatus;
+import com.example.grpc.payment.v1.RefundSummary;
 import com.example.overbooking_service.compensation.CompensationResult;
 import com.example.overbooking_service.grpc.MoneyMapper;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -203,6 +204,59 @@ class CompensationGrpcTest {
 		assertThat(payments.calls).hasValue(callsBefore).hasValue(30);
 	}
 
+	@Test
+	void summaryCountsRefundsOfThreeBookings() throws Exception {
+		UUID declined = UUID.randomUUID();
+		payments.declined = Set.of(declined.toString());
+		UUID first = UUID.randomUUID();
+
+		mockMvc.perform(summary(first, UUID.randomUUID(), declined))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(3))
+				.andExpect(jsonPath("$.succeeded").value(2))
+				.andExpect(jsonPath("$.declined").value(1))
+				.andExpect(jsonPath("$.refundedAmount").value(241.0));
+
+		assertThat(bookings.calls).hasValue(1);
+		assertThat(payments.batchCalls).hasValue(1);
+		assertThat(payments.items).first().extracting(RefundItem::getIdempotencyKey).isEqualTo(key(first));
+	}
+
+	@Test
+	void summaryForMissingBookingReturns404() throws Exception {
+		UUID missing = UUID.randomUUID();
+		bookings.missing = Set.of(missing.toString());
+
+		mockMvc.perform(summary(UUID.randomUUID(), missing))
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+
+		assertThat(payments.batchCalls).hasValue(0);
+	}
+
+	@Test
+	void refundBatchIsRetriedAfterTwoUnavailableResponses() throws Exception {
+		payments.batchFailuresBeforeSuccess = 2;
+
+		mockMvc.perform(summary(UUID.randomUUID()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(1));
+
+		assertThat(payments.batchCalls).hasValue(3);
+	}
+
+	@Test
+	void summaryReturns503WhenPaymentServiceIsUnavailable() throws Exception {
+		payments.batchFailuresBeforeSuccess = 100;
+
+		mockMvc.perform(summary(UUID.randomUUID()))
+				.andExpect(status().isServiceUnavailable())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.status").value(503));
+
+		assertThat(payments.batchCalls).hasValue(3);
+	}
+
 	private static RefundOrder order() {
 		UUID bookingId = UUID.randomUUID();
 		return new RefundOrder(bookingId, AMOUNT, key(bookingId));
@@ -213,9 +267,17 @@ class CompensationGrpcTest {
 	}
 
 	private MockHttpServletRequestBuilder compensations(UUID... ids) {
+		return request("/api/v1/overbooking/compensations", ids);
+	}
+
+	private MockHttpServletRequestBuilder summary(UUID... ids) {
+		return request("/api/v1/overbooking/compensations/summary", ids);
+	}
+
+	private MockHttpServletRequestBuilder request(String path, UUID... ids) {
 		String body = Arrays.stream(ids).map(id -> "\"" + id + "\"")
 				.collect(Collectors.joining(",", "{\"bookingIds\":[", "]}"));
-		return MockMvcRequestBuilders.post("/api/v1/overbooking/compensations")
+		return MockMvcRequestBuilders.post(path)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(body);
 	}
@@ -252,17 +314,66 @@ class CompensationGrpcTest {
 	private static final class FakePaymentService extends PaymentServiceGrpc.PaymentServiceImplBase {
 
 		final AtomicInteger calls = new AtomicInteger();
+		final AtomicInteger batchCalls = new AtomicInteger();
 		final List<RefundItem> items = new CopyOnWriteArrayList<>();
 		volatile int failuresBeforeSuccess;
+		volatile int batchFailuresBeforeSuccess;
 		volatile int failAfterResults;
 		volatile Set<String> declined = Set.of();
 
 		void reset() {
 			calls.set(0);
+			batchCalls.set(0);
 			items.clear();
 			failuresBeforeSuccess = 0;
+			batchFailuresBeforeSuccess = 0;
 			failAfterResults = -1;
 			declined = Set.of();
+		}
+
+		@Override
+		public StreamObserver<RefundItem> refundBatch(StreamObserver<RefundSummary> responseObserver) {
+			boolean rejected = batchCalls.incrementAndGet() <= batchFailuresBeforeSuccess;
+			if (rejected) {
+				responseObserver.onError(Status.UNAVAILABLE.asRuntimeException());
+			}
+			return new StreamObserver<>() {
+				private int total;
+				private int declinedCount;
+				private BigDecimal refunded = BigDecimal.ZERO;
+
+				@Override
+				public void onNext(RefundItem item) {
+					if (rejected) {
+						return;
+					}
+					items.add(item);
+					total++;
+					if (declined.contains(item.getBookingId())) {
+						declinedCount++;
+					} else {
+						refunded = refunded.add(MoneyMapper.fromProto(item.getAmount()));
+					}
+				}
+
+				@Override
+				public void onError(Throwable t) {
+				}
+
+				@Override
+				public void onCompleted() {
+					if (rejected) {
+						return;
+					}
+					responseObserver.onNext(RefundSummary.newBuilder()
+							.setTotal(total)
+							.setSucceeded(total - declinedCount)
+							.setDeclined(declinedCount)
+							.setRefundedAmount(MoneyMapper.toProto(refunded))
+							.build());
+					responseObserver.onCompleted();
+				}
+			};
 		}
 
 		@Override

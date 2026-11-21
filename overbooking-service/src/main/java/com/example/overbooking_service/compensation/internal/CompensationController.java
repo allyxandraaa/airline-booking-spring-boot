@@ -3,6 +3,7 @@ package com.example.overbooking_service.compensation.internal;
 import com.example.overbooking_service.compensation.CompensationRequest;
 import com.example.overbooking_service.compensation.CompensationResult;
 import com.example.overbooking_service.compensation.CompensationService;
+import com.example.overbooking_service.compensation.CompensationSummary;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,5 +25,10 @@ class CompensationController {
 	@PostMapping("/compensations")
 	public List<CompensationResult> compensate(@Valid @RequestBody CompensationRequest request) {
 		return compensationService.compensate(request.bookingIds());
+	}
+
+	@PostMapping("/compensations/summary")
+	public CompensationSummary summarize(@Valid @RequestBody CompensationRequest request) {
+		return compensationService.summarize(request.bookingIds());
 	}
 }

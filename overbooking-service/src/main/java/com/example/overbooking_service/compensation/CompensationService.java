@@ -6,4 +6,6 @@ import java.util.UUID;
 public interface CompensationService {
 
 	List<CompensationResult> compensate(List<UUID> bookingIds);
+
+	CompensationSummary summarize(List<UUID> bookingIds);
 }

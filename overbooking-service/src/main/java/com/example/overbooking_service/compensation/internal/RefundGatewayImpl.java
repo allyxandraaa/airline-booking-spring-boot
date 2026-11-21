@@ -4,7 +4,9 @@ import com.example.grpc.payment.v1.PaymentServiceGrpc;
 import com.example.grpc.payment.v1.RefundItem;
 import com.example.grpc.payment.v1.RefundResult;
 import com.example.grpc.payment.v1.RefundStatus;
+import com.example.grpc.payment.v1.RefundSummary;
 import com.example.overbooking_service.compensation.CompensationResult;
+import com.example.overbooking_service.compensation.CompensationSummary;
 import com.example.overbooking_service.grpc.MoneyMapper;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -63,6 +65,36 @@ class RefundGatewayImpl implements RefundGateway {
 			throw new RefundStreamFailedException(Status.fromThrowable(e.getCause()), received);
 		}
 		return toResults(orders, received);
+	}
+
+	@Override
+	public CompensationSummary refundBatch(List<RefundOrder> orders) {
+		CompletableFuture<RefundSummary> summary = new CompletableFuture<>();
+		StreamObserver<RefundItem> requests = paymentStub.refundBatch(new StreamObserver<>() {
+			@Override
+			public void onNext(RefundSummary value) {
+				summary.complete(value);
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				summary.completeExceptionally(t);
+			}
+
+			@Override
+			public void onCompleted() {
+				summary.completeExceptionally(Status.INTERNAL.withDescription("No refund summary").asRuntimeException());
+			}
+		});
+		orders.forEach(order -> requests.onNext(toItem(order)));
+		requests.onCompleted();
+		try {
+			RefundSummary result = summary.join();
+			return new CompensationSummary(result.getTotal(), result.getSucceeded(), result.getDeclined(),
+					MoneyMapper.fromProto(result.getRefundedAmount()));
+		} catch (CompletionException e) {
+			throw Status.fromThrowable(e.getCause()).asRuntimeException();
+		}
 	}
 
 	List<CompensationResult> refundAllFallback(List<RefundOrder> orders, Throwable ex) {

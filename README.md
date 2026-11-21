@@ -14,6 +14,37 @@
 
 Контракт подій, якими обмінюються `booking-service` і `payment-service` через Kafka, — у [`docs/EVENT_CONTRACT.md`](./docs/EVENT_CONTRACT.md).
 
+## Архітектура
+
+```mermaid
+flowchart LR
+    client([Клієнт]) -->|1. логін| kc[Keycloak]
+    client -->|2. Bearer JWT| ing[Ingress]
+    ing --> gw[Gateway<br/>JWT + Rate Limiter]
+    gw --- redis[(Redis)]
+    gw -->|REST| passenger[Passenger]
+    gw -->|REST| flight[Flight]
+    gw -->|REST| booking[Booking]
+    gw -->|REST| payment[Payment]
+    gw -->|REST| overbooking[Overbooking]
+    booking -->|REST, HttpExchange| passenger
+    booking -->|gRPC| flight
+    overbooking -->|gRPC| flight
+    overbooking -->|gRPC streaming| booking
+    overbooking -->|gRPC streaming, Circuit Breaker| payment
+    booking -. Kafka, Outbox .-> payment
+    payment -. Kafka, Outbox .-> booking
+    passenger --- db1[(БД)]
+    flight --- db2[(БД)]
+    booking --- db3[(БД)]
+    payment --- db4[(БД)]
+    overbooking --- db5[(БД)]
+```
+
+Кожен сервіс має власну БД. Токен видає Keycloak, перевіряє його шлюз (Resource Server), ліміт запитів рахує шлюз через Redis. Подробиці автентифікації — у [`docs/AUTH_GATEWAY.md`](./docs/AUTH_GATEWAY.md), колекція запитів — [`docs/airline-booking.postman_collection.json`](./docs/airline-booking.postman_collection.json).
+
+Технології: Java 25, Spring Boot 4.1, Spring Cloud Gateway, Keycloak, gRPC (Protocol Buffers), Kafka, PostgreSQL, Resilience4j, Micrometer + Prometheus + Grafana, OpenTelemetry + Tempo + Loki, Kubernetes.
+
 ## Сервіси
 
 Кожен сервіс — окремий, повністю самостійний застосунок зі своєю базою даних; спільної збірки чи спільної схеми між сервісами немає.

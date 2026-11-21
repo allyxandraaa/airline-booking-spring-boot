@@ -37,7 +37,7 @@ class OutboxTracing {
 			return action.call();
 		}
 		Span span = propagator.extract(Map.of(TRACEPARENT, traceparent), Map::get).name("outbox relay").start();
-		try (Tracer.SpanInScope ignored = tracer.withSpan(span)) {
+		try (var _ = tracer.withSpan(span)) {
 			return action.call();
 		} finally {
 			span.end();

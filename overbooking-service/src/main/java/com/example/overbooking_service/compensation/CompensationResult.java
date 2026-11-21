@@ -4,4 +4,10 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record CompensationResult(UUID bookingId, BigDecimal amount, String status) {
+
+	private static final String COMPLETED = "COMPLETED";
+
+	public boolean completed() {
+		return COMPLETED.equals(status);
+	}
 }

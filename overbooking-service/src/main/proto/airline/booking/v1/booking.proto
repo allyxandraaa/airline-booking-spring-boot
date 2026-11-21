@@ -1,7 +1,9 @@
 syntax = "proto3";
 package airline.booking.v1;
 
+import "google/protobuf/timestamp.proto";
 import "airline/common/v1/money.proto";
+import "airline/flight/v1/flight.proto";
 
 option java_package = "com.example.grpc.booking.v1";
 option java_multiple_files = true;
@@ -17,14 +19,29 @@ enum BookingStatus {
 
 service BookingService {
   rpc StreamBookings(StreamBookingsRequest) returns (stream Booking);
+  rpc StreamConfirmedBookings(StreamConfirmedBookingsRequest) returns (stream Booking);
+  rpc BumpBooking(BumpBookingRequest) returns (BumpBookingResponse);
 }
 
 message StreamBookingsRequest {
   repeated string booking_ids = 1;
 }
 
+message StreamConfirmedBookingsRequest {
+  string flight_id = 1;
+}
+
+message BumpBookingRequest {
+  string booking_id = 1;
+}
+
+message BumpBookingResponse {}
+
 message Booking {
   string id = 1;
   airline.common.v1.Money price_at_booking = 2;
   BookingStatus status = 3;
+  string flight_id = 4;
+  airline.flight.v1.TicketClass ticket_class = 5;
+  google.protobuf.Timestamp purchase_time = 6;
 }

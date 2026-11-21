@@ -63,7 +63,7 @@ class PaymentResultServiceImpl implements PaymentResultService {
 		}
 		try {
 			transactionTemplate.executeWithoutResult(status -> apply(event));
-		} catch (DataIntegrityViolationException e) {
+		} catch (DataIntegrityViolationException _) {
 			log.info("Подію {} оброблено паралельно: дублікат, пропускаємо", event.eventId());
 		}
 	}

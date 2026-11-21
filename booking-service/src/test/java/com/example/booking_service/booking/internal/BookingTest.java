@@ -16,6 +16,20 @@ class BookingTest {
 			TicketClass.ECONOMY, Instant.now());
 
 	@Test
+	void onlyConfirmedBookingCanBeBumped() {
+		assertThat(booking.bump()).isFalse();
+		booking.reserve(new BigDecimal("120.50"), UUID.randomUUID());
+		assertThat(booking.bump()).isFalse();
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.SEAT_RESERVED);
+
+		booking.confirm(UUID.randomUUID());
+
+		assertThat(booking.bump()).isTrue();
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.BUMPED);
+		assertThat(booking.bump()).isFalse();
+	}
+
+	@Test
 	void paymentTransitionsOnlyApplyToReservedBooking() {
 		assertThat(booking.confirm(UUID.randomUUID())).isFalse();
 		assertThat(booking.failPayment(UUID.randomUUID())).isFalse();

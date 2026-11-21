@@ -3,7 +3,9 @@ package com.example.booking_service.booking.internal;
 import com.example.booking_service.booking.BookingDto;
 import com.example.booking_service.booking.BookingReservedEvent;
 import com.example.booking_service.booking.BookingService;
+import com.example.booking_service.booking.BookingStatus;
 import com.example.booking_service.booking.CreateBookingRequest;
+import com.example.booking_service.exception.BookingNotBumpableException;
 import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.booking_service.exception.BookingProcessingException;
 import com.example.booking_service.integration.FlightGateway;
@@ -99,6 +101,33 @@ class BookingServiceImpl implements BookingService {
 		return bookingRepository.findAllById(ids).stream()
 				.map(this::toDto)
 				.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<BookingDto> findConfirmedByFlight(UUID flightId) {
+		return bookingRepository.findByFlightIdAndStatus(flightId, BookingStatus.CONFIRMED).stream()
+				.map(this::toDto)
+				.toList();
+	}
+
+	@Override
+	public void bump(UUID id) {
+		UUID reservationId = transactionTemplate.execute(status -> markBumped(id));
+		flightGateway.releaseSeat(reservationId);
+	}
+
+	private UUID markBumped(UUID id) {
+		Booking booking = bookingRepository.findById(id)
+				.orElseThrow(() -> new BookingNotFoundException(id));
+		if (booking.getStatus() == BookingStatus.BUMPED) {
+			return booking.getReservationId();
+		}
+		if (!booking.bump()) {
+			throw new BookingNotBumpableException(id, booking.getStatus());
+		}
+		bookingRepository.save(booking);
+		return booking.getReservationId();
 	}
 
 	private BookingDto reserveAndEnqueuePayment(UUID bookingId, BigDecimal price, UUID reservationId,

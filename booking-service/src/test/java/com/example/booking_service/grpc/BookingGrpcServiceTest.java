@@ -6,8 +6,12 @@ import com.example.booking_service.booking.BookingStatus;
 import com.example.booking_service.booking.PaymentResultService;
 import com.example.booking_service.booking.TicketClass;
 import com.example.grpc.booking.v1.Booking;
+import com.example.booking_service.exception.BookingNotBumpableException;
+import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.grpc.booking.v1.BookingServiceGrpc;
+import com.example.grpc.booking.v1.BumpBookingRequest;
 import com.example.grpc.booking.v1.StreamBookingsRequest;
+import com.example.grpc.booking.v1.StreamConfirmedBookingsRequest;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -81,6 +87,53 @@ class BookingGrpcServiceTest {
 		List<Booking> received = collect(request(List.of(failed.id())));
 
 		assertThat(received.get(0).hasPriceAtBooking()).isFalse();
+	}
+
+	@Test
+	void streamsConfirmedBookingsOfFlightWithClassAndPurchaseTime() {
+		BookingDto booking = booking(BookingStatus.CONFIRMED, new BigDecimal("99.00"));
+		when(bookingService.findConfirmedByFlight(booking.flightId())).thenReturn(List.of(booking));
+		List<Booking> received = new ArrayList<>();
+
+		stub.streamConfirmedBookings(StreamConfirmedBookingsRequest.newBuilder()
+				.setFlightId(booking.flightId().toString())
+				.build()).forEachRemaining(received::add);
+
+		assertThat(received).hasSize(1);
+		assertThat(received.get(0).getFlightId()).isEqualTo(booking.flightId().toString());
+		assertThat(received.get(0).getTicketClass())
+				.isEqualTo(com.example.grpc.flight.v1.TicketClass.TICKET_CLASS_ECONOMY);
+		assertThat(received.get(0).getPurchaseTime().getSeconds()).isEqualTo(booking.purchaseTime().getEpochSecond());
+		assertThat(received.get(0).getPurchaseTime().getNanos()).isEqualTo(booking.purchaseTime().getNano());
+	}
+
+	@Test
+	void bumpBookingDelegatesToService() {
+		UUID id = UUID.randomUUID();
+
+		stub.bumpBooking(BumpBookingRequest.newBuilder().setBookingId(id.toString()).build());
+
+		verify(bookingService).bump(id);
+	}
+
+	@Test
+	void bumpOfUnknownBookingReturnsNotFound() {
+		UUID id = UUID.randomUUID();
+		doThrow(new BookingNotFoundException(id)).when(bookingService).bump(id);
+
+		assertThatThrownBy(() -> stub.bumpBooking(BumpBookingRequest.newBuilder().setBookingId(id.toString()).build()))
+				.isInstanceOfSatisfying(StatusRuntimeException.class,
+						e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND));
+	}
+
+	@Test
+	void bumpOfBookingThatIsNotConfirmedReturnsFailedPrecondition() {
+		UUID id = UUID.randomUUID();
+		doThrow(new BookingNotBumpableException(id, BookingStatus.FAILED)).when(bookingService).bump(id);
+
+		assertThatThrownBy(() -> stub.bumpBooking(BumpBookingRequest.newBuilder().setBookingId(id.toString()).build()))
+				.isInstanceOfSatisfying(StatusRuntimeException.class,
+						e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.FAILED_PRECONDITION));
 	}
 
 	@Test

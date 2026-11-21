@@ -4,6 +4,7 @@ import com.example.flight_service.exception.FlightNotFoundException;
 import com.example.flight_service.exception.ReservationNotFoundException;
 import com.example.flight_service.exception.SeatUnavailableException;
 import com.example.flight_service.flight.CreateFlightRequest;
+import com.example.flight_service.flight.FlightCapacityDto;
 import com.example.flight_service.flight.FlightDto;
 import com.example.flight_service.flight.FlightService;
 import com.example.flight_service.flight.ReservationDto;
@@ -104,6 +105,14 @@ class FlightServiceImpl implements FlightService {
 						.release(reservation.getTicketClass());
 			}
 		});
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public FlightCapacityDto getCapacity(UUID flightId) {
+		Inventory inventory = inventoryRepository.findById(flightId)
+				.orElseThrow(() -> new FlightNotFoundException(flightId));
+		return new FlightCapacityDto(inventory.getTotalSeatsEconomy(), inventory.getTotalSeatsBusiness());
 	}
 
 	private BigDecimal timeFactor(Instant departureTime) {

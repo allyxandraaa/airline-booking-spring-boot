@@ -3,9 +3,11 @@ package com.example.flight_service.grpc;
 import com.example.flight_service.exception.FlightNotFoundException;
 import com.example.flight_service.exception.ReservationNotFoundException;
 import com.example.flight_service.exception.SeatUnavailableException;
+import com.example.flight_service.flight.FlightCapacityDto;
 import com.example.flight_service.flight.FlightService;
 import com.example.flight_service.flight.ReservationDto;
 import com.example.grpc.flight.v1.FlightServiceGrpc;
+import com.example.grpc.flight.v1.GetFlightCapacityRequest;
 import com.example.grpc.flight.v1.GetPriceRequest;
 import com.example.grpc.flight.v1.ReleaseSeatRequest;
 import com.example.grpc.flight.v1.ReserveSeatRequest;
@@ -110,6 +112,30 @@ class FlightGrpcServiceTest {
 
 		assertThat(error.getStatus().getCode()).isEqualTo(Status.Code.FAILED_PRECONDITION);
 		assertThat(reasonOf(error)).isEqualTo("SEATS_UNAVAILABLE");
+	}
+
+	@Test
+	void capacityReturnsPhysicalSeatsPerClass() {
+		when(flightService.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(150, 12));
+
+		var response = stub.getFlightCapacity(GetFlightCapacityRequest.newBuilder()
+				.setFlightId(FLIGHT_ID.toString())
+				.build());
+
+		assertThat(response.getSeatsEconomy()).isEqualTo(150);
+		assertThat(response.getSeatsBusiness()).isEqualTo(12);
+	}
+
+	@Test
+	void capacityOfUnknownFlightReturnsNotFound() throws Exception {
+		when(flightService.getCapacity(FLIGHT_ID)).thenThrow(new FlightNotFoundException(FLIGHT_ID));
+
+		StatusRuntimeException error = failureOf(() -> stub.getFlightCapacity(GetFlightCapacityRequest.newBuilder()
+				.setFlightId(FLIGHT_ID.toString())
+				.build()));
+
+		assertThat(error.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
+		assertThat(reasonOf(error)).isEqualTo("FLIGHT_NOT_FOUND");
 	}
 
 	@Test

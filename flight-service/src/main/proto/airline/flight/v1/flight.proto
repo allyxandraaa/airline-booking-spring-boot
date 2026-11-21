@@ -16,6 +16,7 @@ service FlightService {
   rpc GetPrice(GetPriceRequest) returns (GetPriceResponse);
   rpc ReserveSeat(ReserveSeatRequest) returns (ReserveSeatResponse);
   rpc ReleaseSeat(ReleaseSeatRequest) returns (ReleaseSeatResponse);
+  rpc GetFlightCapacity(GetFlightCapacityRequest) returns (GetFlightCapacityResponse);
 }
 
 message GetPriceRequest {
@@ -41,3 +42,12 @@ message ReleaseSeatRequest {
 }
 
 message ReleaseSeatResponse {}
+
+message GetFlightCapacityRequest {
+  string flight_id = 1;
+}
+
+message GetFlightCapacityResponse {
+  int32 seats_economy = 1;
+  int32 seats_business = 2;
+}

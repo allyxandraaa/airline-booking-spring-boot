@@ -48,7 +48,9 @@ class CompensationServiceTest {
 	void failedCompensationDoesNotLeaveActiveTask() {
 		when(bookingClient.getBookingsByIds(any())).thenThrow(new IllegalStateException("booking service down"));
 
-		assertThatThrownBy(() -> service.compensate(List.of(UUID.randomUUID()))).isInstanceOf(IllegalStateException.class);
+		List<UUID> bookingIds = List.of(UUID.randomUUID());
+
+		assertThatThrownBy(() -> service.compensate(bookingIds)).isInstanceOf(IllegalStateException.class);
 
 		assertThat(timer().activeTasks()).isZero();
 	}

@@ -81,6 +81,14 @@ class Booking {
 		this.status = BookingStatus.FAILED;
 	}
 
+	boolean bump() {
+		if (status != BookingStatus.CONFIRMED) {
+			return false;
+		}
+		this.status = BookingStatus.BUMPED;
+		return true;
+	}
+
 	boolean confirm(UUID paymentId) {
 		return finishPayment(BookingStatus.CONFIRMED, paymentId);
 	}

@@ -33,11 +33,11 @@ class BookingEventPublisherTest {
 	void sendsEventToBookingEventsTopicWithBookingIdAsKey() {
 		publisher.publish(event);
 
-		ProducerRecord<String, BookingReservedEvent> record = capturedRecord();
-		assertThat(record.topic()).isEqualTo("booking-events");
-		assertThat(record.key()).isEqualTo(event.bookingId().toString());
-		assertThat(record.value()).isEqualTo(event);
-		assertThat(record.headers().lastHeader("X-Correlation-Id")).isNull();
+		ProducerRecord<String, BookingReservedEvent> message = capturedRecord();
+		assertThat(message.topic()).isEqualTo("booking-events");
+		assertThat(message.key()).isEqualTo(event.bookingId().toString());
+		assertThat(message.value()).isEqualTo(event);
+		assertThat(message.headers().lastHeader("X-Correlation-Id")).isNull();
 	}
 
 	@Test

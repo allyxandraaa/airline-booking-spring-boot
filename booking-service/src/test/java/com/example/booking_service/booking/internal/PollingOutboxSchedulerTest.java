@@ -40,30 +40,30 @@ class PollingOutboxSchedulerTest {
 	@Test
 	void publishesPendingRecordsAndMarksThemProcessed() {
 		BookingReservedEvent event = newEvent("120.50");
-		OutboxRecord record = recordOf(event);
+		OutboxRecord outboxRecord = recordOf(event);
 		SendResult<String, BookingReservedEvent> sendResult = mock(SendResult.class);
-		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(record));
+		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(outboxRecord));
 		when(publisher.publish(any(BookingReservedEvent.class))).thenReturn(CompletableFuture.completedFuture(sendResult));
 
 		scheduler.processOutbox();
 
 		verify(publisher).publish(event);
-		assertThat(record.isProcessed()).isTrue();
+		assertThat(outboxRecord.isProcessed()).isTrue();
 	}
 
 	@Test
 	void publishRunsInTraceContextStoredWithRecord() throws Exception {
 		String traceparent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 		BookingReservedEvent event = newEvent("120.50");
-		OutboxRecord record = new OutboxRecord(event.eventId(), "Booking", event.bookingId(), "BookingReserved",
+		OutboxRecord outboxRecord = new OutboxRecord(event.eventId(), "Booking", event.bookingId(), "BookingReserved",
 				jsonMapper.writeValueAsString(event), Instant.now(), traceparent);
-		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(record));
+		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(outboxRecord));
 		when(publisher.publish(any(BookingReservedEvent.class))).thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
 		scheduler.processOutbox();
 
 		verify(tracing).call(eq(traceparent), any());
-		assertThat(record.isProcessed()).isTrue();
+		assertThat(outboxRecord.isProcessed()).isTrue();
 	}
 
 	@Test
@@ -77,14 +77,14 @@ class PollingOutboxSchedulerTest {
 
 	@Test
 	void keepsRecordUnprocessedWhenPublishingFails() {
-		OutboxRecord record = recordOf(newEvent("120.50"));
-		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(record));
+		OutboxRecord outboxRecord = recordOf(newEvent("120.50"));
+		when(repository.findTop50ByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(outboxRecord));
 		when(publisher.publish(any(BookingReservedEvent.class)))
 				.thenReturn(CompletableFuture.failedFuture(new IllegalStateException("брокер недоступний")));
 
 		scheduler.processOutbox();
 
-		assertThat(record.isProcessed()).isFalse();
+		assertThat(outboxRecord.isProcessed()).isFalse();
 	}
 
 	@Test

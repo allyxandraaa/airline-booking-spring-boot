@@ -47,16 +47,16 @@ class PollingOutboxScheduler {
 	@Transactional
 	public void processOutbox() {
 		List<OutboxRecord> pending = outboxRepository.findTop50ByProcessedFalseOrderByCreatedAtAsc();
-		for (OutboxRecord record : pending) {
+		for (OutboxRecord outboxRecord : pending) {
 			try {
-				BookingReservedEvent event = jsonMapper.readValue(record.getPayload(), BookingReservedEvent.class);
-				tracing.call(record.getTraceparent(), () -> publisher.publish(event).get(sendTimeoutMs, TimeUnit.MILLISECONDS));
-				record.markProcessed();
-			} catch (InterruptedException e) {
+				BookingReservedEvent event = jsonMapper.readValue(outboxRecord.getPayload(), BookingReservedEvent.class);
+				tracing.call(outboxRecord.getTraceparent(), () -> publisher.publish(event).get(sendTimeoutMs, TimeUnit.MILLISECONDS));
+				outboxRecord.markProcessed();
+			} catch (InterruptedException _) {
 				Thread.currentThread().interrupt();
 				return;
 			} catch (Exception e) {
-				log.warn("Подію outbox {} не доставлено, повторна спроба в наступному циклі", record.getId(), e);
+				log.warn("Подію outbox {} не доставлено, повторна спроба в наступному циклі", outboxRecord.getId(), e);
 				return;
 			}
 		}

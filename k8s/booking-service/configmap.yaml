@@ -10,6 +10,6 @@ data:
   SPRING_JPA_SHOW_SQL: "false"
   FLIGHT_SERVICE_URL: "http://flight-service:8081"
   FLIGHT_GRPC_TARGET: "flight-service:9081"
-  CUSTOMER_SERVICE_URL: "http://customer-service:8085"
+  PASSENGER_SERVICE_URL: "http://passenger-service:8085"
   KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
   OTEL_TRACES_ENDPOINT: "http://otel-collector:4318/v1/traces"

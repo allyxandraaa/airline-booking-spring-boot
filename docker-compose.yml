@@ -23,26 +23,26 @@ services:
       timeout: 10s
       retries: 10
 
-  postgres-customer:
+  postgres-passenger:
     image: postgres:16-alpine
     env_file:
-      - ./customer-service/.env
+      - ./passenger-service/.env
     volumes:
-      - customer-db-data:/var/lib/postgresql/data
+      - passenger-db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 3s
       timeout: 3s
       retries: 5
 
-  customer-service:
-    build: ./customer-service
+  passenger-service:
+    build: ./passenger-service
     env_file:
-      - ./customer-service/.env
+      - ./passenger-service/.env
     ports:
       - "8085:8085"
     depends_on:
-      postgres-customer:
+      postgres-passenger:
         condition: service_healthy
 
   postgres-flight:
@@ -141,7 +141,7 @@ services:
         condition: service_healthy
 
 volumes:
-  customer-db-data:
+  passenger-db-data:
   flight-db-data:
   booking-db-data:
   payment-db-data:

@@ -12,7 +12,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: customer-service
+              app: passenger-service
         - podSelector:
             matchLabels:
               app: flight-service

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-passenger
+spec:
+  clusterIP: None
+  selector:
+    app: postgres-passenger
+  ports:
+    - port: 5432
+      targetPort: 5432

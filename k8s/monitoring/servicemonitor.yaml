@@ -19,6 +19,7 @@ spec:
           - booking-service
           - payment-service
           - overbooking-service
+          - gateway-service
   endpoints:
     - port: http
       path: /actuator/prometheus

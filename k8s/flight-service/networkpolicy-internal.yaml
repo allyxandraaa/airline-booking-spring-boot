@@ -17,6 +17,12 @@ spec:
         - port: 8081
         - port: 9081
     - from:
+        - podSelector:
+            matchLabels:
+              app: overbooking-service
+      ports:
+        - port: 9081
+    - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring

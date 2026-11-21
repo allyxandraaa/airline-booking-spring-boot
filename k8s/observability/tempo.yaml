@@ -46,6 +46,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 10001
+      automountServiceAccountToken: false
       containers:
         - name: tempo
           image: grafana/tempo:2.10.8
@@ -71,9 +72,11 @@ spec:
             requests:
               cpu: "100m"
               memory: "256Mi"
+              ephemeral-storage: "256Mi"
             limits:
               cpu: "1000m"
               memory: "1Gi"
+              ephemeral-storage: "1Gi"
       volumes:
         - name: config
           configMap:

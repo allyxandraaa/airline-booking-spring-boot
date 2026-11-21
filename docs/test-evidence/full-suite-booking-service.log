@@ -1,0 +1,199 @@
+Picked up JAVA_TOOL_OPTIONS: -Djdk.net.unixdomain.tmpdir=C:/jtmp
+> Task :cleanTest
+> Task :protobufDummy UP-TO-DATE
+> Task :extractIncludeProto UP-TO-DATE
+> Task :extractProto UP-TO-DATE
+> Task :generateProto UP-TO-DATE
+> Task :compileJava
+> Task :processProtoResources UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :extractIncludeTestProto UP-TO-DATE
+> Task :extractTestProto UP-TO-DATE
+> Task :generateTestProto NO-SOURCE
+> Task :compileTestJava
+> Task :processTestProtoResources UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses
+
+> Task :test
+Picked up JAVA_TOOL_OPTIONS: -Djdk.net.unixdomain.tmpdir=C:/jtmp
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :test
+
+BookingServiceApplicationTests > contextLoads() PASSED
+
+BookingControllerTest > createWithBlankPassengerNameReturns400() PASSED
+
+BookingControllerTest > createReturns201WithReservedBooking() PASSED
+
+BookingControllerTest > createForUnknownPassengerReturns404ProblemDetail() PASSED
+
+BookingControllerTest > validRequestReturns200WithBookings() PASSED
+
+BookingControllerTest > nullIdElementReturns400() PASSED
+
+BookingControllerTest > unknownIdsAreSimplyOmitted() PASSED
+
+BookingControllerTest > createForUnknownFlightReturns404ProblemDetail() PASSED
+
+BookingControllerTest > getByIdWithMalformedIdReturns400() PASSED
+
+BookingControllerTest > getByIdReturns404ProblemDetailWhenMissing() PASSED
+
+BookingControllerTest > missingIdsReturns400() PASSED
+
+BookingControllerTest > createWithoutSeatsReturns409ProblemDetail() PASSED
+
+BookingControllerTest > createWhenProcessingFailsReturns503ProblemDetail() PASSED
+
+BookingControllerTest > getByIdReturnsBooking() PASSED
+
+BookingControllerTest > createWithMissingFieldsReturns400() PASSED
+
+BookingControllerTest > emptyIdsReturns400ProblemDetail() PASSED
+
+BookingEventPublisherTest > addsCorrelationIdHeaderWhenPresentInMdc() PASSED
+
+BookingEventPublisherTest > sendsEventToBookingEventsTopicWithBookingIdAsKey() PASSED
+
+BookingServiceTest > createStoresTraceparentOfCurrentSpanInOutbox() PASSED
+
+BookingServiceTest > findByIdThrowsWhenBookingMissing() PASSED
+
+BookingServiceTest > createMarksBookingFailedWhenFlightIsUnknown() PASSED
+
+BookingServiceTest > loadsAllBookingsWithSingleRepositoryCall() PASSED
+
+BookingServiceTest > createMarksBookingFailedWhenNoSeatsLeft() PASSED
+
+BookingServiceTest > createStillFailsBookingWhenSeatReleaseFails() PASSED
+
+BookingServiceTest > createReleasesSeatAndFailsBookingWhenSomethingBreaksAfterReservation() PASSED
+
+BookingServiceTest > createReservesSeatAndStoresPaymentRequestInOutbox() PASSED
+
+BookingServiceTest > findByIdReturnsBooking() PASSED
+
+BookingServiceTest > createReleasesSeatAndFailsBookingWhenPassengerIsUnknown() PASSED
+
+BookingTest > paymentTransitionsOnlyApplyToReservedBooking() PASSED
+
+OutboxTracingTest > withoutActiveSpanNothingIsStoredAndActionRunsDirectly() PASSED
+
+OutboxTracingTest > traceparentIsCapturedAndRestoredWithSameTraceId() PASSED
+
+PaymentProcessedListenerTest > transientFailureIsRetriedThenSentToDlt() PASSED
+
+PaymentProcessedListenerTest > eventIsDeliveredToPaymentResultService() PASSED
+
+PaymentResultServiceTest > declinedReleasesSeatOnceAndFailsBooking() PASSED
+
+PaymentResultServiceTest > successConfirmsBookingAndStoresPaymentId() PASSED
+
+PaymentResultServiceTest > unknownBookingIsIgnored() PASSED
+
+PaymentResultServiceTest > seatReleaseFailureIsTransientAndLeavesBookingReserved() PASSED
+
+PaymentResultServiceTest > duplicateEventIsSkippedWithoutSideEffects() PASSED
+
+PaymentResultServiceTest > failedWithoutPaymentReleasesSeatAndFailsBooking() PASSED
+
+PaymentResultServiceTest > resultForAlreadyFinishedBookingIsIgnored() PASSED
+
+PaymentResultServiceTest > concurrentDuplicateIsTreatedAsProcessed() PASSED
+
+PollingOutboxSchedulerTest > keepsRecordUnprocessedWhenPublishingFails() PASSED
+
+PollingOutboxSchedulerTest > pendingEventsGaugeReflectsRepositoryCount() PASSED
+
+PollingOutboxSchedulerTest > publishesPendingRecordsAndMarksThemProcessed() PASSED
+
+PollingOutboxSchedulerTest > publishRunsInTraceContextStoredWithRecord() PASSED
+
+PollingOutboxSchedulerTest > stopsAtFirstFailureToPreserveOrder() PASSED
+
+GlobalExceptionHandlerTest > missingHeaderReturns400ProblemDetail() PASSED
+
+GlobalExceptionHandlerTest > malformedJsonReturns400ProblemDetail() PASSED
+
+GlobalExceptionHandlerTest > invalidBodyReturns400ProblemDetail() PASSED
+
+GlobalExceptionHandlerTest > unexpectedExceptionReturns500ProblemDetailWithoutLeakingMessage() PASSED
+
+GlobalExceptionHandlerTest > unknownUrlReturns404ProblemDetail() PASSED
+
+GlobalExceptionHandlerTest > wrongMethodReturns405ProblemDetail() PASSED
+
+BookingGrpcFailureSimulationTest > firstTwoCallsFailWithUnavailableAndThirdSucceeds() PASSED
+
+BookingGrpcServiceTest > malformedIdReturnsInvalidArgument() PASSED
+
+BookingGrpcServiceTest > streamsEveryFoundBooking() PASSED
+
+BookingGrpcServiceTest > emptyIdListReturnsInvalidArgument() PASSED
+
+BookingGrpcServiceTest > bookingWithoutPriceHasNoPriceInTheMessage() PASSED
+
+BookingGrpcServiceTest > missingBookingsAreSimplyAbsentFromTheStream() PASSED
+
+MoneyMapperTest > convertsToUnitsAndNanos(String, long, int) > [1] amount = "129.50", units = "129", nanos = "500000000" PASSED
+
+MoneyMapperTest > convertsToUnitsAndNanos(String, long, int) > [2] amount = "0.01", units = "0", nanos = "10000000" PASSED
+
+MoneyMapperTest > convertsToUnitsAndNanos(String, long, int) > [3] amount = "0", units = "0", nanos = "0" PASSED
+
+MoneyMapperTest > convertsToUnitsAndNanos(String, long, int) > [4] amount = "1000000", units = "1000000", nanos = "0" PASSED
+
+MoneyMapperTest > convertsToUnitsAndNanos(String, long, int) > [5] amount = "-1.25", units = "-1", nanos = "-250000000" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [1] amount = "129.50" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [2] amount = "0.01" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [3] amount = "0" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [4] amount = "1000000" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [5] amount = "-1.25" PASSED
+
+MoneyMapperTest > roundTripKeepsTheValue(String) > [6] amount = "0.123456789" PASSED
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::arrayBaseOffset has been called by com.google.protobuf.UnsafeUtil (file:/C:/Users/Oleksandra%20Malii/.gradle/caches/modules-2/files-2.1/com.google.protobuf/protobuf-java/4.35.1/b933d3f9fc35b0356f28980c2ffc5892d297eebf/protobuf-java-4.35.1.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.protobuf.UnsafeUtil
+WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
+
+> Task :test
+
+FlightGatewayGrpcTest > getPriceSendsTicketClassAndConvertsMoney() PASSED
+
+FlightGatewayGrpcTest > reserveSeatReturnsReservationId() PASSED
+
+FlightGatewayGrpcTest > reserveSeatIsNeverRetried() PASSED
+
+FlightGatewayGrpcTest > unknownFlightBecomesFlightNotFoundWithoutRetry() PASSED
+
+FlightGatewayGrpcTest > getPriceIsRetriedAfterTwoUnavailableResponses() PASSED
+
+FlightGatewayGrpcTest > releaseSeatCallsFlightService() PASSED
+
+FlightGatewayGrpcTest > getPriceGivesUpAfterThreeAttempts() PASSED
+
+FlightGatewayGrpcTest > noFreeSeatsBecomesSeatUnavailable() PASSED
+
+PassengerGatewayTest > getPaymentMethodIdReturnsIdFromPassengerService() PASSED
+
+PassengerGatewayTest > getPaymentMethodIdForUnknownPassengerThrowsPassengerNotFound() PASSED
+
+PassengerServicePactConsumerTest > gatewayReadsPaymentMethodFromPassengerService(MockServer) PASSED
+
+PassengerServicePactConsumerTest > gatewayMapsNotFoundToPassengerNotFound(MockServer) PASSED
+
+
+BUILD SUCCESSFUL in 1m 53s
+13 actionable tasks: 4 executed, 9 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.7.1/userguide/configuration_cache_enabling.html
+exit 0

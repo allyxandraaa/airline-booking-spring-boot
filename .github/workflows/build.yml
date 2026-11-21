@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [passenger-service, flight-service, booking-service, payment-service, overbooking-service]
+        service: [passenger-service, flight-service, booking-service, payment-service, overbooking-service, gateway-service]
     defaults:
       run:
         working-directory: ${{ matrix.service }}
@@ -21,8 +21,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
       - name: Build with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew build ${{ !contains('overbooking-service payment-service booking-service', matrix.service) && '-x test' || '' }}
+          ./gradlew build

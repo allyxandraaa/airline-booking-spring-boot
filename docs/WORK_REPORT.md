@@ -126,3 +126,33 @@
 Обмеження привілеїв подів:
 - #85: `securityContext` у Deployment п'яти сервісів: запуск від користувача 10001 (як `USER` у Dockerfile), `runAsNonRoot`, заборона ескалації привілеїв, файлова система лише для читання з `emptyDir` у `/tmp` для Spring Boot, без автоматичного токена ServiceAccount.
 - #86: те саме для StatefulSet п'яти баз Postgres: користувач 70 з `fsGroup` для диска даних, `emptyDir` у `/tmp` і `/var/run/postgresql` під тимчасові файли й сокет.
+
+## Групове завдання 9
+
+### Малій Олександра Михайлівна
+
+Основа gRPC і сервери трьох сервісів:
+- #95: Java 25 у `build.gradle` і `Dockerfile` сервісів, стартери Spring gRPC і генерація Java-коду з `src/main/proto`. Контракти `.proto`: `Money`, `FlightService`, `BookingService`, `PaymentService`. `MoneyMapper` (`BigDecimal` і `Money`) з тестом у чотирьох сервісах. Обробник `StatusRuntimeException` в `overbooking-service`: `UNAVAILABLE` і `DEADLINE_EXCEEDED` дають 503, інші статуси 502.
+- #96: gRPC-сервер `flight-service` (Unary): `GetPrice`, `ReserveSeat`, `ReleaseSeat` поверх наявного `FlightService`. Помилки як `NOT_FOUND`, `FAILED_PRECONDITION` та `INVALID_ARGUMENT` з `ErrorInfo.reason`, інтерсептор імітації збою `GetPrice`.
+- #97: gRPC-сервер `booking-service` (Server streaming): `streamBookings` віддає знайдені бронювання потоком, відсутні пропускає, порожній список дає `INVALID_ARGUMENT`.
+- #98: gRPC-сервер `payment-service` (Client і Bidirectional streaming): `RefundBatch` з одним підсумком і `ProcessRefunds` з результатом на кожен елемент, валідація суми, ключа ідемпотентності та id бронювання.
+- #99: gRPC-клієнт `booking-service` до `flight-service`: `FlightGatewayImpl` замість REST, політика повторів для `GetPrice` (3 спроби, лише `UNAVAILABLE`) в `application.properties`. REST-клієнт `FlightClient` і його DTO видалено, тести на підставному gRPC-сервері, зокрема повтори.
+
+### Говорищева Вероніка Максимівна
+
+Клієнти `overbooking-service`, інфраструктура і звіт:
+- #100: gRPC-клієнти `overbooking-service` до `booking-service` (`StreamBookings`) і `payment-service` (`ProcessRefunds`) замість REST. Повтори налаштовано на рівні каналів, Resilience4j Retry прибрано, тести переписано на підставні gRPC-сервери замість WireMock.
+- #101: `POST /api/v1/overbooking/compensations/summary` через client streaming `RefundBatch` і повтор `RefundBatch` у каналі `payment`.
+- #102: порти gRPC 9081, 9082, 9083 у `docker-compose.yml` і k8s, змінні `FLIGHT_GRPC_TARGET`, `BOOKING_GRPC_TARGET`, `PAYMENT_GRPC_TARGET`, дозволи нових портів у `networkpolicy-internal.yaml`.
+- #103: звіт `docs/GRPC_REPORT.md`: схема викликів, конфігурація повторів, чотири типи викликів зі скріншотами, експерименти R1, R2, R3 і тести.
+
+## Групове завдання 10
+
+### Малій Олександра Михайлівна
+
+Контрактне та навантажувальне тестування, звіт:
+- Контрактний тест Consumer-Driven Contracts на Pact між `booking-service` (споживач) і `passenger-service` (постачальник) для виклику `GET /api/v1/passengers/{id}/payment-method`. `PassengerServicePactConsumerTest` описує дві взаємодії (існуючий пасажир, відповідь 200 з `paymentMethodId`; невідомий пасажир, відповідь 404) і створює файл `contracts/pacts/booking-service-passenger-service.json`. `PassengerServicePactProviderTest` піднімає справжній Spring Boot із `PassengerController`, готує стани `passenger exists` та `passenger does not exist` через `@State` і перевіряє відповіді проти цього файлу.
+- Перевірка, що зміна контракту валить тест: постачальник перейменував поле `paymentMethodId`, постачальник змінив адресу ендпоінта, споживач змінив свої очікування. У кожному випадку тест постачальника впав з повідомленням Pact, код після експерименту повернуто.
+- Три сценарії навантаження в k6 (`load-tests/`): читання ціни з `ramping-vus`, резервування і скасування місця з `constant-arrival-rate` (100 ітерацій/с), наскрізне бронювання з `ramping-arrival-rate` і піками 60, 120, 200 та 300 запитів/с. Пороги за p95 і часткою помилок. Скрипт `run-scenario.sh` запускає сценарій у Docker на мережі compose та знімає завантаження контейнерів. Для бронювання знайдено точку насичення близько 100 запитів/с.
+- `customer-service` перейменовано на `passenger-service` (тека, Java-пакет, docker-compose, маніфести k8s, CI, змінні середовища), щоб назва відповідала предметній області й клієнту `PassengerClient`.
+- Звіт `docs/CONTRACT_LOAD_TESTING_REPORT.md` з результатами запусків контрактних і навантажувальних тестів.

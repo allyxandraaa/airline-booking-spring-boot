@@ -10,4 +10,6 @@ data:
   SPRING_JPA_SHOW_SQL: "false"
   BOOKING_SERVICE_URL: "http://booking-service:8082"
   PAYMENT_SERVICE_URL: "http://payment-service:8083"
+  BOOKING_GRPC_TARGET: "booking-service:9082"
+  PAYMENT_GRPC_TARGET: "payment-service:9083"
   OTEL_TRACES_ENDPOINT: "http://otel-collector:4318/v1/traces"

@@ -1,0 +1,232 @@
+{
+    "metrics": {
+        "data_sent": {
+            "count": 6221249,
+            "rate": 30365.319126252336
+        },
+        "data_received": {
+            "count": 9777939,
+            "rate": 47725.18157238661
+        },
+        "iteration_duration": {
+            "avg": 6983.818353522343,
+            "min": 21.323372,
+            "med": 8512.904378,
+            "max": 14480.178343,
+            "p(90)": 11995.802149,
+            "p(95)": 12161.398860000001
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 6974.724679736337,
+            "min": 9.96599,
+            "med": 8499.4417325,
+            "max": 14479.842861,
+            "p(90)": 11993.430461099999,
+            "p(95)": 12159.759876
+        },
+        "vus": {
+            "value": 13,
+            "min": 0,
+            "max": 2000
+        },
+        "http_req_receiving": {
+            "min": 0.01987,
+            "med": 0.1363475,
+            "max": 40.498232,
+            "p(90)": 0.2856116,
+            "p(95)": 0.4523769,
+            "avg": 0.20072364838836493
+        },
+        "checks": {
+            "passes": 40662,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.95": false
+            },
+            "value": 1
+        },
+        "iterations": {
+            "count": 20331,
+            "rate": 99.23365921470693
+        },
+        "http_req_blocked": {
+            "p(90)": 0.3223445000000001,
+            "p(95)": 0.5981636500000003,
+            "avg": 0.11229040728184142,
+            "min": 0.002996,
+            "med": 0.010682,
+            "max": 32.636569
+        },
+        "http_req_waiting": {
+            "med": 8499.246482499999,
+            "max": 14479.697015,
+            "p(90)": 11993.131825,
+            "p(95)": 12159.5456981,
+            "avg": 6974.43330621704,
+            "min": 9.837637
+        },
+        "http_req_duration": {
+            "avg": 6974.724679736337,
+            "min": 9.96599,
+            "med": 8499.4417325,
+            "max": 14479.842861,
+            "p(90)": 11993.430461099999,
+            "p(95)": 12159.759876,
+            "thresholds": {
+                "p(95)<2000": true
+            }
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        },
+        "vus_max": {
+            "max": 2000,
+            "value": 2000,
+            "min": 100
+        },
+        "http_reqs": {
+            "count": 20352,
+            "rate": 99.33615819869733
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 20352,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0
+        },
+        "http_req_connecting": {
+            "max": 31.378572,
+            "p(90)": 0,
+            "p(95)": 0.4091026,
+            "avg": 0.07117248103380501,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_sending": {
+            "avg": 0.09064987092177641,
+            "min": 0.01009,
+            "med": 0.0701035,
+            "max": 18.080574,
+            "p(90)": 0.12320980000000001,
+            "p(95)": 0.17239725
+        },
+        "dropped_iterations": {
+            "count": 7043,
+            "rate": 34.37620686878072
+        }
+    },
+    "setup_data": {
+        "flightId": "c704955d-d201-42d4-8d1e-c88dc6334b9d",
+        "passengers": [
+            {
+                "id": "0582c23d-b6df-402e-8931-eefb78501349",
+                "name": "Load Tester 0"
+            },
+            {
+                "id": "4fac0d35-2346-4ea5-a503-e42820bfb2ce",
+                "name": "Load Tester 1"
+            },
+            {
+                "id": "5e0f672a-aa64-49e7-99a5-1b6efd29e05d",
+                "name": "Load Tester 2"
+            },
+            {
+                "id": "dd4d613c-7eea-41b5-8110-bd2f9ae14627",
+                "name": "Load Tester 3"
+            },
+            {
+                "name": "Load Tester 4",
+                "id": "06eee784-9b4f-433d-a443-d8d3c03e878e"
+            },
+            {
+                "id": "3533f70c-552f-4311-b3d8-296c1a59f173",
+                "name": "Load Tester 5"
+            },
+            {
+                "id": "f6875c12-795c-4760-9413-9adeccb8c1a3",
+                "name": "Load Tester 6"
+            },
+            {
+                "id": "f0c719ad-bc95-43da-81a2-a9371f0a16ef",
+                "name": "Load Tester 7"
+            },
+            {
+                "id": "22a2576d-4948-4f7f-8a32-348e0219a8e7",
+                "name": "Load Tester 8"
+            },
+            {
+                "id": "55934fad-35e1-4775-bd51-0d39ed46d755",
+                "name": "Load Tester 9"
+            },
+            {
+                "id": "9daab67f-5bdd-4a5b-aaef-c854d563938a",
+                "name": "Load Tester 10"
+            },
+            {
+                "id": "e03d3c37-1778-4e45-b49c-f22c5e95b786",
+                "name": "Load Tester 11"
+            },
+            {
+                "id": "7df62b53-9f20-4131-a6e1-c19a22628c12",
+                "name": "Load Tester 12"
+            },
+            {
+                "id": "92c50d39-52a8-4bd9-a49a-882891d11589",
+                "name": "Load Tester 13"
+            },
+            {
+                "id": "0eb4043c-20b2-4c93-a9e4-9f3f3bcec43e",
+                "name": "Load Tester 14"
+            },
+            {
+                "id": "96433b11-9f23-4df0-91bf-9e12b6cfb649",
+                "name": "Load Tester 15"
+            },
+            {
+                "id": "c95492b3-a135-4ff7-ac87-e4f6e0113e41",
+                "name": "Load Tester 16"
+            },
+            {
+                "name": "Load Tester 17",
+                "id": "b1cb6435-4cb2-4da9-a87d-4a157724c877"
+            },
+            {
+                "id": "c316c54f-eb1d-47f9-b74c-d1948c38425a",
+                "name": "Load Tester 18"
+            },
+            {
+                "id": "f5eeff0e-bdae-4b07-b7b3-98a3fba0a81f",
+                "name": "Load Tester 19"
+            }
+        ]
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "booking created (201)": {
+                "id": "ea19ebc08b736cb15075dc35086fd59f",
+                "passes": 20331,
+                "fails": 0,
+                "name": "booking created (201)",
+                "path": "::booking created (201)"
+            },
+            "booking has SEAT_RESERVED status": {
+                "name": "booking has SEAT_RESERVED status",
+                "path": "::booking has SEAT_RESERVED status",
+                "id": "ce3f00d75d7452ad2dbdd23bccfbe248",
+                "passes": 20331,
+                "fails": 0
+            }
+        }
+    }
+}

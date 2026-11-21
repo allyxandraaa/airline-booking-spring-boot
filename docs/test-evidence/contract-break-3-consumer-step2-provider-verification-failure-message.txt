@@ -1,0 +1,13 @@
+java.lang.AssertionError: booking-service - Upon a payment method request for an existing passenger 
+Failures:
+
+1) Verifying a pact between booking-service and passenger-service - a payment method request for an existing passenger has a matching body
+
+    1.1) body: $ Actual map is missing the following keys: methodId
+
+        {
+        -  "methodId": "a41e6f08-5d93-4b27-8c15-7f3d0e92b6a4"
+        +  "paymentMethodId": "a41e6f08-5d93-4b27-8c15-7f3d0e92b6a4"
+        }
+
+

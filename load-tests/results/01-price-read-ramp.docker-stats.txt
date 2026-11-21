@@ -1,0 +1,80 @@
+--- 16:58:12
+airline-booking-spring-boot-payment-service-1 cpu=13.49% mem=429.9MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=5.71% mem=463.8MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.65% mem=417.7MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=63.31% mem=496.2MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=3.07% mem=89.88MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=2.31% mem=77.57MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=0.04% mem=52.21MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=178.83% mem=424.8MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=2.43% mem=38.94MiB / 15.22GiB
+--- 16:58:25
+airline-booking-spring-boot-payment-service-1 cpu=17.25% mem=430.3MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=94.85% mem=465.4MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=1.51% mem=418MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=271.27% mem=530.1MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=16.26% mem=90.36MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=7.24% mem=78.48MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=0.02% mem=52.45MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=45.07% mem=356.6MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=51.40% mem=42.82MiB / 15.22GiB
+--- 16:58:38
+airline-booking-spring-boot-payment-service-1 cpu=4.13% mem=430.6MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=5.76% mem=464.7MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.21% mem=416.8MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=184.01% mem=541.1MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=1.85% mem=90.02MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=2.52% mem=77.61MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=0.02% mem=52.2MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=14.69% mem=365.8MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=37.21% mem=43.79MiB / 15.22GiB
+--- 16:58:51
+airline-booking-spring-boot-payment-service-1 cpu=4.61% mem=432.8MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=5.46% mem=465.5MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.42% mem=416.9MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=69.67% mem=541.6MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=8.80% mem=90.66MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=2.12% mem=77.36MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=0.03% mem=52.19MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=23.85% mem=360.5MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=42.40% mem=42.48MiB / 15.22GiB
+--- 16:59:04
+airline-booking-spring-boot-payment-service-1 cpu=3.25% mem=432.8MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=4.79% mem=465.4MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.49% mem=416.7MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=63.32% mem=542.1MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=2.09% mem=89.99MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=3.25% mem=77.61MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=0.10% mem=52.5MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=4.93% mem=363.4MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=39.79% mem=43.17MiB / 15.22GiB
+--- 16:59:16
+airline-booking-spring-boot-payment-service-1 cpu=2.47% mem=433.2MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=2.71% mem=465.2MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.25% mem=415.8MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=64.05% mem=540.7MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=13.96% mem=90.02MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=12.05% mem=80.88MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=2.50% mem=57.29MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=54.95% mem=356MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=43.91% mem=46.14MiB / 15.22GiB
+--- 16:59:29
+airline-booking-spring-boot-payment-service-1 cpu=4.37% mem=434MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=4.16% mem=465.4MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.28% mem=415.6MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=58.85% mem=540.9MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=2.13% mem=89.88MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=9.67% mem=77.2MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=6.45% mem=52.13MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=6.68% mem=360MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=42.80% mem=42.71MiB / 15.22GiB
+--- 16:59:42
+airline-booking-spring-boot-payment-service-1 cpu=3.72% mem=433.5MiB / 15.22GiB
+airline-booking-spring-boot-booking-service-1 cpu=4.53% mem=466.1MiB / 15.22GiB
+airline-booking-spring-boot-passenger-service-1 cpu=0.32% mem=415.6MiB / 15.22GiB
+airline-booking-spring-boot-flight-service-1 cpu=3.98% mem=539.3MiB / 15.22GiB
+airline-booking-spring-boot-postgres-payment-1 cpu=1.92% mem=89.92MiB / 15.22GiB
+airline-booking-spring-boot-postgres-booking-1 cpu=5.94% mem=77.17MiB / 15.22GiB
+airline-booking-spring-boot-postgres-passenger-1 cpu=5.32% mem=52.12MiB / 15.22GiB
+airline-booking-spring-boot-kafka-1 cpu=5.07% mem=358.1MiB / 15.22GiB
+airline-booking-spring-boot-postgres-flight-1 cpu=1.93% mem=40.84MiB / 15.22GiB

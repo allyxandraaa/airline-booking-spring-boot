@@ -1,0 +1,249 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /scripts/02-seat-reservation-constant-rate.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 400 max VUs, 1m30s max duration (incl. graceful stop):
+              * seat_reservation_open_model: 100.00 iterations/s for 1m0s (maxVUs: 100-400, gracefulStop: 30s)
+
+
+running (0m01.0s), 002/100 VUs, 84 complete and 0 interrupted iterations
+seat_reservation_open_model   [   1% ] 002/100 VUs  0m00.9s/1m0s  100.00 iters/s
+
+running (0m02.0s), 002/100 VUs, 184 complete and 0 interrupted iterations
+seat_reservation_open_model   [   3% ] 002/100 VUs  0m01.9s/1m0s  100.00 iters/s
+
+running (0m03.0s), 001/100 VUs, 285 complete and 0 interrupted iterations
+seat_reservation_open_model   [   5% ] 001/100 VUs  0m02.9s/1m0s  100.00 iters/s
+
+running (0m04.0s), 002/100 VUs, 384 complete and 0 interrupted iterations
+seat_reservation_open_model   [   6% ] 002/100 VUs  0m03.9s/1m0s  100.00 iters/s
+
+running (0m05.0s), 001/100 VUs, 485 complete and 0 interrupted iterations
+seat_reservation_open_model   [   8% ] 001/100 VUs  0m04.9s/1m0s  100.00 iters/s
+
+running (0m06.0s), 001/100 VUs, 585 complete and 0 interrupted iterations
+seat_reservation_open_model   [  10% ] 001/100 VUs  0m05.9s/1m0s  100.00 iters/s
+
+running (0m07.0s), 001/100 VUs, 685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  11% ] 001/100 VUs  0m06.9s/1m0s  100.00 iters/s
+
+running (0m08.0s), 001/100 VUs, 785 complete and 0 interrupted iterations
+seat_reservation_open_model   [  13% ] 001/100 VUs  0m07.9s/1m0s  100.00 iters/s
+
+running (0m09.0s), 001/100 VUs, 885 complete and 0 interrupted iterations
+seat_reservation_open_model   [  15% ] 001/100 VUs  0m08.9s/1m0s  100.00 iters/s
+
+running (0m10.0s), 002/100 VUs, 984 complete and 0 interrupted iterations
+seat_reservation_open_model   [  16% ] 002/100 VUs  0m09.9s/1m0s  100.00 iters/s
+
+running (0m11.0s), 001/100 VUs, 1085 complete and 0 interrupted iterations
+seat_reservation_open_model   [  18% ] 001/100 VUs  0m10.9s/1m0s  100.00 iters/s
+
+running (0m12.0s), 001/100 VUs, 1185 complete and 0 interrupted iterations
+seat_reservation_open_model   [  20% ] 001/100 VUs  0m11.9s/1m0s  100.00 iters/s
+
+running (0m13.0s), 001/100 VUs, 1285 complete and 0 interrupted iterations
+seat_reservation_open_model   [  21% ] 001/100 VUs  0m12.9s/1m0s  100.00 iters/s
+
+running (0m14.0s), 010/100 VUs, 1376 complete and 0 interrupted iterations
+seat_reservation_open_model   [  23% ] 010/100 VUs  0m13.9s/1m0s  100.00 iters/s
+
+running (0m15.0s), 001/100 VUs, 1485 complete and 0 interrupted iterations
+seat_reservation_open_model   [  25% ] 001/100 VUs  0m14.9s/1m0s  100.00 iters/s
+
+running (0m16.0s), 001/100 VUs, 1585 complete and 0 interrupted iterations
+seat_reservation_open_model   [  26% ] 001/100 VUs  0m15.9s/1m0s  100.00 iters/s
+
+running (0m17.0s), 001/100 VUs, 1685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  28% ] 001/100 VUs  0m16.9s/1m0s  100.00 iters/s
+
+running (0m18.0s), 001/100 VUs, 1785 complete and 0 interrupted iterations
+seat_reservation_open_model   [  30% ] 001/100 VUs  0m17.9s/1m0s  100.00 iters/s
+
+running (0m19.0s), 002/100 VUs, 1884 complete and 0 interrupted iterations
+seat_reservation_open_model   [  31% ] 002/100 VUs  0m18.9s/1m0s  100.00 iters/s
+
+running (0m20.0s), 001/100 VUs, 1985 complete and 0 interrupted iterations
+seat_reservation_open_model   [  33% ] 001/100 VUs  0m19.9s/1m0s  100.00 iters/s
+
+running (0m21.0s), 001/100 VUs, 2085 complete and 0 interrupted iterations
+seat_reservation_open_model   [  35% ] 001/100 VUs  0m20.9s/1m0s  100.00 iters/s
+
+running (0m22.0s), 001/100 VUs, 2185 complete and 0 interrupted iterations
+seat_reservation_open_model   [  36% ] 001/100 VUs  0m21.9s/1m0s  100.00 iters/s
+
+running (0m23.0s), 001/100 VUs, 2285 complete and 0 interrupted iterations
+seat_reservation_open_model   [  38% ] 001/100 VUs  0m22.9s/1m0s  100.00 iters/s
+
+running (0m24.0s), 002/100 VUs, 2384 complete and 0 interrupted iterations
+seat_reservation_open_model   [  40% ] 002/100 VUs  0m23.9s/1m0s  100.00 iters/s
+
+running (0m25.0s), 001/100 VUs, 2485 complete and 0 interrupted iterations
+seat_reservation_open_model   [  41% ] 001/100 VUs  0m24.9s/1m0s  100.00 iters/s
+
+running (0m26.0s), 003/100 VUs, 2583 complete and 0 interrupted iterations
+seat_reservation_open_model   [  43% ] 003/100 VUs  0m25.9s/1m0s  100.00 iters/s
+
+running (0m27.0s), 001/100 VUs, 2685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  45% ] 001/100 VUs  0m26.9s/1m0s  100.00 iters/s
+
+running (0m28.0s), 001/100 VUs, 2785 complete and 0 interrupted iterations
+seat_reservation_open_model   [  46% ] 001/100 VUs  0m27.9s/1m0s  100.00 iters/s
+
+running (0m29.0s), 002/100 VUs, 2884 complete and 0 interrupted iterations
+seat_reservation_open_model   [  48% ] 002/100 VUs  0m28.9s/1m0s  100.00 iters/s
+
+running (0m30.0s), 001/100 VUs, 2985 complete and 0 interrupted iterations
+seat_reservation_open_model   [  50% ] 001/100 VUs  0m29.9s/1m0s  100.00 iters/s
+
+running (0m31.0s), 001/100 VUs, 3085 complete and 0 interrupted iterations
+seat_reservation_open_model   [  51% ] 001/100 VUs  0m30.9s/1m0s  100.00 iters/s
+
+running (0m32.0s), 001/100 VUs, 3185 complete and 0 interrupted iterations
+seat_reservation_open_model   [  53% ] 001/100 VUs  0m31.9s/1m0s  100.00 iters/s
+
+running (0m33.0s), 001/100 VUs, 3285 complete and 0 interrupted iterations
+seat_reservation_open_model   [  55% ] 001/100 VUs  0m32.9s/1m0s  100.00 iters/s
+
+running (0m34.0s), 001/100 VUs, 3385 complete and 0 interrupted iterations
+seat_reservation_open_model   [  56% ] 001/100 VUs  0m33.9s/1m0s  100.00 iters/s
+
+running (0m35.0s), 001/100 VUs, 3485 complete and 0 interrupted iterations
+seat_reservation_open_model   [  58% ] 001/100 VUs  0m34.9s/1m0s  100.00 iters/s
+
+running (0m36.0s), 001/100 VUs, 3585 complete and 0 interrupted iterations
+seat_reservation_open_model   [  60% ] 001/100 VUs  0m35.9s/1m0s  100.00 iters/s
+
+running (0m37.0s), 001/100 VUs, 3685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  61% ] 001/100 VUs  0m36.9s/1m0s  100.00 iters/s
+
+running (0m38.0s), 001/100 VUs, 3785 complete and 0 interrupted iterations
+seat_reservation_open_model   [  63% ] 001/100 VUs  0m37.9s/1m0s  100.00 iters/s
+
+running (0m39.0s), 001/100 VUs, 3885 complete and 0 interrupted iterations
+seat_reservation_open_model   [  65% ] 001/100 VUs  0m38.9s/1m0s  100.00 iters/s
+
+running (0m40.0s), 001/100 VUs, 3985 complete and 0 interrupted iterations
+seat_reservation_open_model   [  66% ] 001/100 VUs  0m39.9s/1m0s  100.00 iters/s
+
+running (0m41.0s), 001/100 VUs, 4085 complete and 0 interrupted iterations
+seat_reservation_open_model   [  68% ] 001/100 VUs  0m40.9s/1m0s  100.00 iters/s
+
+running (0m42.0s), 001/100 VUs, 4185 complete and 0 interrupted iterations
+seat_reservation_open_model   [  70% ] 001/100 VUs  0m41.9s/1m0s  100.00 iters/s
+
+running (0m43.0s), 001/100 VUs, 4285 complete and 0 interrupted iterations
+seat_reservation_open_model   [  71% ] 001/100 VUs  0m42.9s/1m0s  100.00 iters/s
+
+running (0m44.0s), 001/100 VUs, 4385 complete and 0 interrupted iterations
+seat_reservation_open_model   [  73% ] 001/100 VUs  0m43.9s/1m0s  100.00 iters/s
+
+running (0m45.0s), 001/100 VUs, 4485 complete and 0 interrupted iterations
+seat_reservation_open_model   [  75% ] 001/100 VUs  0m44.9s/1m0s  100.00 iters/s
+
+running (0m46.0s), 001/100 VUs, 4585 complete and 0 interrupted iterations
+seat_reservation_open_model   [  76% ] 001/100 VUs  0m45.9s/1m0s  100.00 iters/s
+
+running (0m47.0s), 001/100 VUs, 4685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  78% ] 001/100 VUs  0m46.9s/1m0s  100.00 iters/s
+
+running (0m48.0s), 001/100 VUs, 4785 complete and 0 interrupted iterations
+seat_reservation_open_model   [  80% ] 001/100 VUs  0m47.9s/1m0s  100.00 iters/s
+
+running (0m49.0s), 001/100 VUs, 4885 complete and 0 interrupted iterations
+seat_reservation_open_model   [  81% ] 001/100 VUs  0m48.9s/1m0s  100.00 iters/s
+
+running (0m50.0s), 001/100 VUs, 4985 complete and 0 interrupted iterations
+seat_reservation_open_model   [  83% ] 001/100 VUs  0m49.9s/1m0s  100.00 iters/s
+
+running (0m51.0s), 001/100 VUs, 5085 complete and 0 interrupted iterations
+seat_reservation_open_model   [  85% ] 001/100 VUs  0m50.9s/1m0s  100.00 iters/s
+
+running (0m52.0s), 002/100 VUs, 5184 complete and 0 interrupted iterations
+seat_reservation_open_model   [  86% ] 001/100 VUs  0m51.9s/1m0s  100.00 iters/s
+
+running (0m53.0s), 001/100 VUs, 5285 complete and 0 interrupted iterations
+seat_reservation_open_model   [  88% ] 001/100 VUs  0m52.9s/1m0s  100.00 iters/s
+
+running (0m54.0s), 005/100 VUs, 5381 complete and 0 interrupted iterations
+seat_reservation_open_model   [  90% ] 005/100 VUs  0m53.9s/1m0s  100.00 iters/s
+
+running (0m55.0s), 001/100 VUs, 5485 complete and 0 interrupted iterations
+seat_reservation_open_model   [  91% ] 001/100 VUs  0m54.9s/1m0s  100.00 iters/s
+
+running (0m56.0s), 001/100 VUs, 5585 complete and 0 interrupted iterations
+seat_reservation_open_model   [  93% ] 001/100 VUs  0m55.9s/1m0s  100.00 iters/s
+
+running (0m57.0s), 001/100 VUs, 5685 complete and 0 interrupted iterations
+seat_reservation_open_model   [  95% ] 001/100 VUs  0m56.9s/1m0s  100.00 iters/s
+
+running (0m58.0s), 034/100 VUs, 5752 complete and 0 interrupted iterations
+seat_reservation_open_model   [  96% ] 034/100 VUs  0m57.9s/1m0s  100.00 iters/s
+
+running (0m59.0s), 071/100 VUs, 5815 complete and 0 interrupted iterations
+seat_reservation_open_model   [  98% ] 071/100 VUs  0m58.9s/1m0s  100.00 iters/s
+
+running (1m00.0s), 005/100 VUs, 5981 complete and 0 interrupted iterations
+seat_reservation_open_model   [ 100% ] 005/100 VUs  0m59.9s/1m0s  100.00 iters/s
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    dropped_iterations
+    ✓ 'count<1' count=0
+
+    http_req_duration{name:DELETE /reservations/{id}}
+    ✓ 'p(95)<500' p(95)=24.77ms
+
+    http_req_duration{name:POST /flights/{id}/reservations}
+    ✓ 'p(95)<500' p(95)=27.49ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 18003   299.420263/s
+    checks_succeeded...: 100.00% 18003 out of 18003
+    checks_failed......: 0.00%   0 out of 18003
+
+    ✓ reservation created (201)
+    ✓ reservationId returned
+    ✓ reservation released (204)
+
+    HTTP
+    http_req_duration............................: avg=14.44ms min=1.99ms med=5.37ms  max=1.08s    p(90)=9.73ms  p(95)=26.16ms
+      { expected_response:true }.................: avg=14.44ms min=1.99ms med=5.37ms  max=1.08s    p(90)=9.73ms  p(95)=26.16ms
+      { name:DELETE /reservations/{id} }.........: avg=13.9ms  min=1.99ms med=5.43ms  max=1.08s    p(90)=9.66ms  p(95)=24.77ms
+      { name:POST /flights/{id}/reservations }...: avg=14.99ms min=3.47ms med=5.33ms  max=873.77ms p(90)=9.77ms  p(95)=27.49ms
+    http_req_failed..............................: 0.00%  0 out of 12012
+    http_reqs....................................: 12012  199.779825/s
+
+    EXECUTION
+    dropped_iterations...........................: 0      0/s
+    iteration_duration...........................: avg=29.61ms min=7.71ms med=11.51ms max=1.21s    p(90)=20.52ms p(95)=60.65ms
+    iterations...................................: 6001   99.806754/s
+    vus..........................................: 5      min=1          max=71 
+    vus_max......................................: 100    min=100        max=100
+
+    NETWORK
+    data_received................................: 1.3 MB 22 kB/s
+    data_sent....................................: 2.1 MB 35 kB/s
+
+
+
+
+running (1m00.1s), 000/100 VUs, 6001 complete and 0 interrupted iterations
+seat_reservation_open_model ✓ [ 100% ] 000/100 VUs  1m0s  100.00 iters/s

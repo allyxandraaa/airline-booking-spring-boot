@@ -1,0 +1,40 @@
+Picked up JAVA_TOOL_OPTIONS: -Djdk.net.unixdomain.tmpdir=C:/jtmp
+> Task :cleanTest
+
+> Task :compileJava
+Picked up JAVA_TOOL_OPTIONS: -Djdk.net.unixdomain.tmpdir=C:/jtmp
+
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses
+
+> Task :test
+Picked up JAVA_TOOL_OPTIONS: -Djdk.net.unixdomain.tmpdir=C:/jtmp
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :test
+
+PassengerServicePactProviderTest > verifyPact(PactVerificationContext) > booking-service - a payment method request for an existing passenger FAILED
+    java.lang.AssertionError at PassengerServicePactProviderTest.java:44
+
+
+> Task :test
+
+2 tests completed, 1 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/Users/Oleksandra%20Malii/Projects/airline-booking-spring-boot/passenger-service/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 47s
+6 actionable tasks: 4 executed, 2 up-to-date

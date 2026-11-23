@@ -1,7 +1,7 @@
 package com.example.overbooking_service.resolution.internal;
 
-import com.example.overbooking_service.client.BookingClient;
-import com.example.overbooking_service.client.FlightClient;
+import com.example.overbooking_service.client.BookingGateway;
+import com.example.overbooking_service.client.FlightGateway;
 import com.example.overbooking_service.client.dto.ConfirmedBookingDto;
 import com.example.overbooking_service.client.dto.FlightCapacityDto;
 import com.example.overbooking_service.client.dto.TicketClass;
@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -46,13 +47,13 @@ class OverbookingResolutionServiceTest {
 	private static final Instant START = Instant.parse("2026-11-01T10:00:00Z");
 	private static final BigDecimal PRICE = new BigDecimal("100.00");
 
-	private final FlightClient flightClient = mock(FlightClient.class);
-	private final BookingClient bookingClient = mock(BookingClient.class);
+	private final FlightGateway flightGateway = mock(FlightGateway.class);
+	private final BookingGateway bookingGateway = mock(BookingGateway.class);
 	private final CompensationService compensationService = mock(CompensationService.class);
 	private final OverbookingReportRepository reportRepository = mock(OverbookingReportRepository.class);
 	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
 	private final OverbookingResolutionServiceImpl service = new OverbookingResolutionServiceImpl(
-			flightClient, bookingClient, compensationService, reportRepository,
+			flightGateway, bookingGateway, compensationService, reportRepository,
 			mock(PlatformTransactionManager.class), registry);
 
 	@BeforeEach
@@ -66,8 +67,8 @@ class OverbookingResolutionServiceTest {
 
 	@Test
 	void flightWithinCapacityProducesEmptyReport() {
-		when(flightClient.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(2, 1));
-		when(bookingClient.getConfirmedBookings(FLIGHT_ID)).thenReturn(bookings(TicketClass.ECONOMY, 2));
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(2, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(bookings(TicketClass.ECONOMY, 2));
 
 		OverbookingReportDto report = service.resolve(FLIGHT_ID);
 
@@ -75,7 +76,7 @@ class OverbookingResolutionServiceTest {
 		assertThat(report.bumpedCount()).isZero();
 		assertThat(report.bumpedBookings()).isEmpty();
 		assertThat(report.totalCompensation()).isEqualByComparingTo("0");
-		verify(bookingClient, never()).bump(any());
+		verify(bookingGateway, never()).bump(any());
 		verifyNoInteractions(compensationService);
 	}
 
@@ -83,8 +84,8 @@ class OverbookingResolutionServiceTest {
 	void latestPurchasesAreBumpedAndCompensated() {
 		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 4);
 		List<ConfirmedBookingDto> business = bookings(TicketClass.BUSINESS, 1);
-		when(flightClient.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(2, 1));
-		when(bookingClient.getConfirmedBookings(FLIGHT_ID)).thenReturn(concat(economy, business));
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(2, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(concat(economy, business));
 		UUID latest = economy.get(3).id();
 		UUID previous = economy.get(2).id();
 		when(compensationService.compensate(List.of(latest, previous))).thenReturn(List.of(
@@ -93,8 +94,8 @@ class OverbookingResolutionServiceTest {
 
 		OverbookingReportDto report = service.resolve(FLIGHT_ID);
 
-		verify(bookingClient).bump(latest);
-		verify(bookingClient).bump(previous);
+		verify(bookingGateway).bump(latest);
+		verify(bookingGateway).bump(previous);
 		assertThat(report.seatsEconomy()).isEqualTo(2);
 		assertThat(report.seatsBusiness()).isEqualTo(1);
 		assertThat(report.bumpedCount()).isEqualTo(2);
@@ -109,8 +110,8 @@ class OverbookingResolutionServiceTest {
 	@Test
 	void deferredRefundIsReportedAndNotCountedAsPaid() {
 		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 3);
-		when(flightClient.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
-		when(bookingClient.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
 		UUID latest = economy.get(2).id();
 		UUID previous = economy.get(1).id();
 		when(compensationService.compensate(List.of(latest, previous))).thenReturn(List.of(
@@ -125,13 +126,43 @@ class OverbookingResolutionServiceTest {
 	}
 
 	@Test
+	void transientBumpFailureIsRetriedAndBookingIsRefunded() {
+		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 2);
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
+		UUID latest = economy.get(1).id();
+		doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).doNothing().when(bookingGateway).bump(latest);
+		when(compensationService.compensate(List.of(latest)))
+				.thenReturn(List.of(new CompensationResult(latest, PRICE, "COMPLETED")));
+
+		OverbookingReportDto report = service.resolve(FLIGHT_ID);
+
+		verify(bookingGateway, times(2)).bump(latest);
+		assertThat(report.bumpedBookings()).extracting(BumpedBookingDto::outcome).containsExactly(BumpOutcome.COMPENSATED);
+	}
+
+	@Test
+	void bumpRejectedByBookingIsNotRetried() {
+		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 2);
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
+		UUID latest = economy.get(1).id();
+		doThrow(new StatusRuntimeException(Status.FAILED_PRECONDITION)).when(bookingGateway).bump(latest);
+
+		OverbookingReportDto report = service.resolve(FLIGHT_ID);
+
+		verify(bookingGateway, times(1)).bump(latest);
+		assertThat(report.bumpedBookings()).extracting(BumpedBookingDto::outcome).containsExactly(BumpOutcome.BUMP_FAILED);
+	}
+
+	@Test
 	void bookingThatCouldNotBeBumpedIsReportedAndNotRefunded() {
 		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 3);
-		when(flightClient.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
-		when(bookingClient.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
 		UUID latest = economy.get(2).id();
 		UUID previous = economy.get(1).id();
-		doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).when(bookingClient).bump(latest);
+		doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).when(bookingGateway).bump(latest);
 		when(compensationService.compensate(List.of(previous)))
 				.thenReturn(List.of(new CompensationResult(previous, PRICE, "COMPLETED")));
 
@@ -147,8 +178,8 @@ class OverbookingResolutionServiceTest {
 	@Test
 	void compensationFailureLeavesRefundsPendingButKeepsTheReport() {
 		List<ConfirmedBookingDto> economy = bookings(TicketClass.ECONOMY, 2);
-		when(flightClient.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
-		when(bookingClient.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(FLIGHT_ID)).thenReturn(economy);
 		when(compensationService.compensate(anyList())).thenThrow(new IllegalStateException("payment is down"));
 
 		OverbookingReportDto report = service.resolve(FLIGHT_ID);
@@ -161,11 +192,11 @@ class OverbookingResolutionServiceTest {
 
 	@Test
 	void unknownFlightStopsBeforeAnyBookingIsTouched() {
-		when(flightClient.getCapacity(FLIGHT_ID)).thenThrow(new FlightNotFoundException(FLIGHT_ID));
+		when(flightGateway.getCapacity(FLIGHT_ID)).thenThrow(new FlightNotFoundException(FLIGHT_ID));
 
 		assertThatThrownBy(() -> service.resolve(FLIGHT_ID)).isInstanceOf(FlightNotFoundException.class);
 
-		verifyNoInteractions(bookingClient, compensationService, reportRepository);
+		verifyNoInteractions(bookingGateway, compensationService, reportRepository);
 	}
 
 	@Test

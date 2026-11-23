@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-class GrpcFlightClient implements FlightClient {
+class FlightGatewayImpl implements FlightGateway {
 
 	private final FlightServiceGrpc.FlightServiceBlockingStub flightStub;
 
-	GrpcFlightClient(FlightServiceGrpc.FlightServiceBlockingStub flightStub) {
+	FlightGatewayImpl(FlightServiceGrpc.FlightServiceBlockingStub flightStub) {
 		this.flightStub = flightStub;
 	}
 

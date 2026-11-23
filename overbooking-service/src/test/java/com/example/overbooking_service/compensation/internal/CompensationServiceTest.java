@@ -1,6 +1,6 @@
 package com.example.overbooking_service.compensation.internal;
 
-import com.example.overbooking_service.client.BookingClient;
+import com.example.overbooking_service.client.BookingGateway;
 import com.example.overbooking_service.client.dto.BookingDto;
 import com.example.overbooking_service.compensation.CompensationResult;
 import io.micrometer.core.instrument.LongTaskTimer;
@@ -20,10 +20,10 @@ import static org.mockito.Mockito.when;
 
 class CompensationServiceTest {
 
-	private final BookingClient bookingClient = mock(BookingClient.class);
+	private final BookingGateway bookingGateway = mock(BookingGateway.class);
 	private final RefundGateway refundGateway = mock(RefundGateway.class);
 	private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
-	private final CompensationServiceImpl service = new CompensationServiceImpl(bookingClient, refundGateway, registry);
+	private final CompensationServiceImpl service = new CompensationServiceImpl(bookingGateway, refundGateway, registry);
 
 	private LongTaskTimer timer() {
 		return registry.get("overbooking.compensation").longTaskTimer();
@@ -32,7 +32,7 @@ class CompensationServiceTest {
 	@Test
 	void compensationIsTimedWhileRunningAndReleasedAfterwards() {
 		UUID id = UUID.randomUUID();
-		when(bookingClient.getBookingsByIds(any())).thenAnswer(invocation -> {
+		when(bookingGateway.getBookingsByIds(any())).thenAnswer(invocation -> {
 			assertThat(timer().activeTasks()).isEqualTo(1);
 			return List.of(new BookingDto(id, new BigDecimal("120.50"), "BUMPED"));
 		});
@@ -46,7 +46,7 @@ class CompensationServiceTest {
 
 	@Test
 	void failedCompensationDoesNotLeaveActiveTask() {
-		when(bookingClient.getBookingsByIds(any())).thenThrow(new IllegalStateException("booking service down"));
+		when(bookingGateway.getBookingsByIds(any())).thenThrow(new IllegalStateException("booking service down"));
 
 		List<UUID> bookingIds = List.of(UUID.randomUUID());
 

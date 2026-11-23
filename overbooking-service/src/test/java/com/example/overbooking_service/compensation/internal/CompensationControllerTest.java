@@ -1,6 +1,6 @@
 package com.example.overbooking_service.compensation.internal;
 
-import com.example.overbooking_service.client.BookingClient;
+import com.example.overbooking_service.client.BookingGateway;
 import com.example.overbooking_service.client.dto.BatchRequest;
 import com.example.overbooking_service.client.dto.BookingDto;
 import com.example.overbooking_service.compensation.CompensationResult;
@@ -44,7 +44,7 @@ class CompensationControllerTest {
 	MockMvc mockMvc;
 
 	@MockitoBean
-	BookingClient bookingClient;
+	BookingGateway bookingGateway;
 
 	@MockitoBean
 	RefundGateway refundGateway;
@@ -52,7 +52,7 @@ class CompensationControllerTest {
 	@Test
 	void threeBookingsUseOneBatchCallAndOneRefundStream() throws Exception {
 		List<UUID> ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-		when(bookingClient.getBookingsByIds(new BatchRequest(ids))).thenReturn(ids.stream()
+		when(bookingGateway.getBookingsByIds(new BatchRequest(ids))).thenReturn(ids.stream()
 				.map(id -> new BookingDto(id, AMOUNT, "BUMPED"))
 				.toList());
 		List<RefundOrder> orders = ids.stream().map(id -> new RefundOrder(id, AMOUNT, key(id))).toList();
@@ -69,7 +69,7 @@ class CompensationControllerTest {
 				.andExpect(jsonPath("$[0].status").value("COMPLETED"))
 				.andExpect(jsonPath("$[2].status").value("PENDING"));
 
-		verify(bookingClient, times(1)).getBookingsByIds(any());
+		verify(bookingGateway, times(1)).getBookingsByIds(any());
 		verify(refundGateway, times(1)).refundAll(anyList());
 	}
 
@@ -77,7 +77,7 @@ class CompensationControllerTest {
 	void missingBookingReturns404ProblemDetail() throws Exception {
 		UUID found = UUID.randomUUID();
 		UUID missing = UUID.randomUUID();
-		when(bookingClient.getBookingsByIds(any()))
+		when(bookingGateway.getBookingsByIds(any()))
 				.thenReturn(List.of(new BookingDto(found, new BigDecimal("80.00"), "BUMPED")));
 
 		mockMvc.perform(compensations(List.of(found, missing)))
@@ -94,7 +94,7 @@ class CompensationControllerTest {
 		mockMvc.perform(compensations(List.of()))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
-		verifyNoInteractions(bookingClient);
+		verifyNoInteractions(bookingGateway);
 	}
 
 	@Test

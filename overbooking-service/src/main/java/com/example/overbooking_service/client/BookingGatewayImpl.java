@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-class GrpcBookingClient implements BookingClient {
+class BookingGatewayImpl implements BookingGateway {
 
 	private static final String STATUS_PREFIX = "BOOKING_STATUS_";
 
 	private final BookingServiceGrpc.BookingServiceBlockingStub bookingStub;
 
-	GrpcBookingClient(BookingServiceGrpc.BookingServiceBlockingStub bookingStub) {
+	BookingGatewayImpl(BookingServiceGrpc.BookingServiceBlockingStub bookingStub) {
 		this.bookingStub = bookingStub;
 	}
 

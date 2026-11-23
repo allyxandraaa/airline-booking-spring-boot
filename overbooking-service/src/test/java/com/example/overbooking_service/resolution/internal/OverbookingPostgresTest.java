@@ -1,7 +1,7 @@
 package com.example.overbooking_service.resolution.internal;
 
-import com.example.overbooking_service.client.BookingClient;
-import com.example.overbooking_service.client.FlightClient;
+import com.example.overbooking_service.client.BookingGateway;
+import com.example.overbooking_service.client.FlightGateway;
 import com.example.overbooking_service.client.dto.ConfirmedBookingDto;
 import com.example.overbooking_service.client.dto.FlightCapacityDto;
 import com.example.overbooking_service.client.dto.TicketClass;
@@ -64,10 +64,10 @@ class OverbookingPostgresTest {
 	}
 
 	@MockitoBean
-	FlightClient flightClient;
+	FlightGateway flightGateway;
 
 	@MockitoBean
-	BookingClient bookingClient;
+	BookingGateway bookingGateway;
 
 	@MockitoBean
 	CompensationService compensationService;
@@ -88,8 +88,8 @@ class OverbookingPostgresTest {
 		UUID flightId = UUID.randomUUID();
 		ConfirmedBookingDto early = confirmed(0);
 		ConfirmedBookingDto late = confirmed(5);
-		when(flightClient.getCapacity(flightId)).thenReturn(new FlightCapacityDto(1, 1));
-		when(bookingClient.getConfirmedBookings(flightId)).thenReturn(List.of(early, late));
+		when(flightGateway.getCapacity(flightId)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(flightId)).thenReturn(List.of(early, late));
 		when(compensationService.compensate(anyList()))
 				.thenReturn(List.of(new CompensationResult(late.id(), PRICE, "COMPLETED")));
 
@@ -111,8 +111,8 @@ class OverbookingPostgresTest {
 	@Test
 	void flightWithinCapacityStoresReportWithoutBumpedBookings() {
 		UUID flightId = UUID.randomUUID();
-		when(flightClient.getCapacity(flightId)).thenReturn(new FlightCapacityDto(2, 1));
-		when(bookingClient.getConfirmedBookings(flightId)).thenReturn(List.of(confirmed(0), confirmed(1)));
+		when(flightGateway.getCapacity(flightId)).thenReturn(new FlightCapacityDto(2, 1));
+		when(bookingGateway.getConfirmedBookings(flightId)).thenReturn(List.of(confirmed(0), confirmed(1)));
 
 		OverbookingReportDto created = service.resolve(flightId);
 
@@ -126,8 +126,8 @@ class OverbookingPostgresTest {
 		UUID flightId = UUID.randomUUID();
 		ConfirmedBookingDto early = confirmed(0);
 		ConfirmedBookingDto late = confirmed(5);
-		when(flightClient.getCapacity(flightId)).thenReturn(new FlightCapacityDto(1, 1));
-		when(bookingClient.getConfirmedBookings(flightId)).thenReturn(List.of(early, late));
+		when(flightGateway.getCapacity(flightId)).thenReturn(new FlightCapacityDto(1, 1));
+		when(bookingGateway.getConfirmedBookings(flightId)).thenReturn(List.of(early, late));
 		when(compensationService.compensate(anyList()))
 				.thenReturn(List.of(new CompensationResult(late.id(), PRICE, "PENDING")));
 

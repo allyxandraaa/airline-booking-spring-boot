@@ -1,7 +1,7 @@
 package com.example.overbooking_service.resolution.internal;
 
-import com.example.overbooking_service.client.BookingClient;
-import com.example.overbooking_service.client.FlightClient;
+import com.example.overbooking_service.client.BookingGateway;
+import com.example.overbooking_service.client.FlightGateway;
 import com.example.overbooking_service.client.dto.ConfirmedBookingDto;
 import com.example.overbooking_service.client.dto.FlightCapacityDto;
 import com.example.overbooking_service.client.dto.TicketClass;
@@ -11,6 +11,7 @@ import com.example.overbooking_service.resolution.BumpOutcome;
 import com.example.overbooking_service.resolution.BumpedBookingDto;
 import com.example.overbooking_service.resolution.OverbookingReportDto;
 import com.example.overbooking_service.resolution.OverbookingResolutionService;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -35,21 +36,23 @@ class OverbookingResolutionServiceImpl implements OverbookingResolutionService {
 
 	private static final Logger log = LoggerFactory.getLogger(OverbookingResolutionServiceImpl.class);
 
-	private final FlightClient flightClient;
-	private final BookingClient bookingClient;
+	private static final int BUMP_ATTEMPTS = 3;
+
+	private final FlightGateway flightGateway;
+	private final BookingGateway bookingGateway;
 	private final CompensationService compensationService;
 	private final OverbookingReportRepository reportRepository;
 	private final TransactionTemplate transactionTemplate;
 	private final MeterRegistry registry;
 
-	OverbookingResolutionServiceImpl(FlightClient flightClient,
-									 BookingClient bookingClient,
+	OverbookingResolutionServiceImpl(FlightGateway flightGateway,
+									 BookingGateway bookingGateway,
 									 CompensationService compensationService,
 									 OverbookingReportRepository reportRepository,
 									 PlatformTransactionManager transactionManager,
 									 MeterRegistry registry) {
-		this.flightClient = flightClient;
-		this.bookingClient = bookingClient;
+		this.flightGateway = flightGateway;
+		this.bookingGateway = bookingGateway;
 		this.compensationService = compensationService;
 		this.reportRepository = reportRepository;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
@@ -58,8 +61,8 @@ class OverbookingResolutionServiceImpl implements OverbookingResolutionService {
 
 	@Override
 	public OverbookingReportDto resolve(UUID flightId) {
-		FlightCapacityDto capacity = flightClient.getCapacity(flightId);
-		List<ConfirmedBookingDto> confirmed = bookingClient.getConfirmedBookings(flightId);
+		FlightCapacityDto capacity = flightGateway.getCapacity(flightId);
+		List<ConfirmedBookingDto> confirmed = bookingGateway.getConfirmedBookings(flightId);
 		List<ConfirmedBookingDto> candidates = Arrays.stream(TicketClass.values())
 				.flatMap(ticketClass -> CandidateSelector.select(confirmed, ticketClass, capacity.seats(ticketClass)).stream())
 				.toList();
@@ -89,15 +92,33 @@ class OverbookingResolutionServiceImpl implements OverbookingResolutionService {
 	private List<UUID> bump(List<ConfirmedBookingDto> candidates, Map<UUID, BumpOutcome> outcomes) {
 		List<UUID> bumpedIds = new ArrayList<>();
 		for (ConfirmedBookingDto candidate : candidates) {
-			try {
-				bookingClient.bump(candidate.id());
+			if (bumpWithRetry(candidate.id())) {
 				bumpedIds.add(candidate.id());
-			} catch (StatusRuntimeException e) {
-				log.warn("Не вдалося зняти бронювання {} з рейсу: {}", candidate.id(), e.getStatus());
+			} else {
 				outcomes.put(candidate.id(), BumpOutcome.BUMP_FAILED);
 			}
 		}
 		return bumpedIds;
+	}
+
+	private boolean bumpWithRetry(UUID bookingId) {
+		for (int attempt = 1; attempt <= BUMP_ATTEMPTS; attempt++) {
+			try {
+				bookingGateway.bump(bookingId);
+				return true;
+			} catch (StatusRuntimeException e) {
+				log.warn("Не вдалося зняти бронювання {} з рейсу (спроба {} з {}): {}",
+						bookingId, attempt, BUMP_ATTEMPTS, e.getStatus());
+				if (!isRetryable(e.getStatus())) {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean isRetryable(Status status) {
+		return status.getCode() != Status.Code.NOT_FOUND && status.getCode() != Status.Code.FAILED_PRECONDITION;
 	}
 
 	private void compensate(List<UUID> bumpedIds, Map<UUID, BumpOutcome> outcomes) {

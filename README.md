@@ -41,7 +41,7 @@ flowchart LR
     overbooking --- db5[(БД)]
 ```
 
-Кожен сервіс має власну БД. Токен видає Keycloak, перевіряє його шлюз (Resource Server), ліміт запитів рахує шлюз через Redis. Подробиці автентифікації — у [`docs/AUTH_GATEWAY.md`](./docs/AUTH_GATEWAY.md), колекція запитів — [`docs/airline-booking.postman_collection.json`](./docs/airline-booking.postman_collection.json).
+Кожен сервіс має власну БД. Токен видає Keycloak, перевіряє його шлюз (Resource Server), ліміт запитів рахує шлюз через Redis. Колекція запитів — [`docs/airline-booking.postman_collection.json`](./docs/airline-booking.postman_collection.json).
 
 Технології: Java 25, Spring Boot 4.1, Spring Cloud Gateway, Keycloak, gRPC (Protocol Buffers), Kafka, PostgreSQL, Resilience4j, Micrometer + Prometheus + Grafana, OpenTelemetry + Tempo + Loki, Kubernetes.
 

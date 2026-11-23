@@ -142,7 +142,7 @@ class PaymentGrpcService extends PaymentServiceGrpc.PaymentServiceImplBase {
 	private static UUID parseId(String value) {
 		try {
 			return UUID.fromString(value);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException _) {
 			throw invalidArgument("Некоректний ідентифікатор: " + value);
 		}
 	}

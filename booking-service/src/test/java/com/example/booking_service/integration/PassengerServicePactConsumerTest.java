@@ -66,8 +66,10 @@ class PassengerServicePactConsumerTest {
 	@Test
 	@PactTestFor(pactMethod = "paymentMethodOfUnknownPassenger")
 	void gatewayMapsNotFoundToPassengerNotFound(MockServer mockServer) {
-		assertThatThrownBy(() -> gateway(mockServer).getPaymentMethodId(UUID.fromString(PASSENGER_ID)))
-				.isInstanceOf(PassengerNotFoundException.class);
+		PassengerGatewayImpl gateway = gateway(mockServer);
+		UUID passengerId = UUID.fromString(PASSENGER_ID);
+
+		assertThatThrownBy(() -> gateway.getPaymentMethodId(passengerId)).isInstanceOf(PassengerNotFoundException.class);
 	}
 
 	private PassengerGatewayImpl gateway(MockServer mockServer) {

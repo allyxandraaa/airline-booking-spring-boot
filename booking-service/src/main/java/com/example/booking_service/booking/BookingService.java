@@ -10,4 +10,8 @@ public interface BookingService {
 	BookingDto findById(UUID id);
 
 	List<BookingDto> findByIds(List<UUID> ids);
+
+	List<BookingDto> findConfirmedByFlight(UUID flightId);
+
+	void bump(UUID id);
 }

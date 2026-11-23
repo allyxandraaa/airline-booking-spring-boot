@@ -1,6 +1,5 @@
 package com.example.booking_service.booking.internal;
 
-import com.example.booking_service.booking.BatchRequest;
 import com.example.booking_service.booking.BookingDto;
 import com.example.booking_service.booking.BookingService;
 import com.example.booking_service.booking.CreateBookingRequest;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -36,10 +34,5 @@ class BookingController {
 	@GetMapping("/{id}")
 	public BookingDto getById(@PathVariable UUID id) {
 		return bookingService.findById(id);
-	}
-
-	@PostMapping("/batch")
-	public List<BookingDto> getBatch(@Valid @RequestBody BatchRequest request) {
-		return bookingService.findByIds(request.ids());
 	}
 }

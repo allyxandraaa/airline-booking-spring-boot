@@ -38,7 +38,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler({ResourceAccessException.class, HttpServerErrorException.class,
 			CallNotPermittedException.class, BulkheadFullException.class})
 	public ProblemDetail handleDependencyUnavailable(Exception ex) {
-		log.warn("Dependency unavailable: {}", ex.toString());
+		log.warn("Dependency unavailable: {}", ex.getMessage());
 		return problem(HttpStatus.SERVICE_UNAVAILABLE, "Сервіс недоступний",
 				"Необхідний зовнішній сервіс тимчасово недоступний");
 	}
@@ -53,13 +53,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(HttpClientErrorException.class)
 	public ProblemDetail handleDependencyRejected(Exception ex) {
-		log.warn("Dependency rejected the request: {}", ex.toString());
+		log.warn("Dependency rejected the request: {}", ex.getMessage());
 		return problem(HttpStatus.BAD_GATEWAY, "Помилка шлюзу",
 				"Зовнішній сервіс відхилив запит");
 	}
 
 	@ExceptionHandler(BookingsNotFoundException.class)
 	public ProblemDetail handleBookingsNotFound(BookingsNotFoundException ex) {
+		return problem(HttpStatus.NOT_FOUND, "Не знайдено", ex.getMessage());
+	}
+
+	@ExceptionHandler({FlightNotFoundException.class, ReportNotFoundException.class})
+	public ProblemDetail handleNotFound(RuntimeException ex) {
 		return problem(HttpStatus.NOT_FOUND, "Не знайдено", ex.getMessage());
 	}
 

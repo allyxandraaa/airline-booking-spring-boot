@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -101,7 +102,9 @@ class PaymentResultServiceTest {
 		doThrow(new DataIntegrityViolationException("дублікат ключа"))
 				.when(processedEventRepository).saveAndFlush(any(ProcessedEvent.class));
 
-		service.applyPaymentResult(event(PaymentProcessedStatus.SUCCESS, paymentId));
+		PaymentProcessedEvent event = event(PaymentProcessedStatus.SUCCESS, paymentId);
+
+		assertThatCode(() -> service.applyPaymentResult(event)).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -127,8 +130,9 @@ class PaymentResultServiceTest {
 	void seatReleaseFailureIsTransientAndLeavesBookingReserved() {
 		doThrow(new IllegalStateException("сервіс рейсів недоступний")).when(flightGateway).releaseSeat(reservationId);
 
-		assertThatThrownBy(() -> service.applyPaymentResult(event(PaymentProcessedStatus.DECLINED, paymentId)))
-				.isInstanceOf(TransientBookingException.class);
+		PaymentProcessedEvent event = event(PaymentProcessedStatus.DECLINED, paymentId);
+
+		assertThatThrownBy(() -> service.applyPaymentResult(event)).isInstanceOf(TransientBookingException.class);
 
 		assertThat(booking.getStatus()).isEqualTo(BookingStatus.SEAT_RESERVED);
 		verify(processedEventRepository, never()).saveAndFlush(any());

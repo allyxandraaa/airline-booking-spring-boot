@@ -21,12 +21,12 @@ class BookingEventPublisher {
 	}
 
 	CompletableFuture<SendResult<String, BookingReservedEvent>> publish(BookingReservedEvent event) {
-		ProducerRecord<String, BookingReservedEvent> record =
+		ProducerRecord<String, BookingReservedEvent> message =
 				new ProducerRecord<>(KafkaTopicConfig.BOOKING_EVENTS_TOPIC, event.bookingId().toString(), event);
 		String correlationId = MDC.get("correlationId");
 		if (correlationId != null) {
-			record.headers().add("X-Correlation-Id", correlationId.getBytes(StandardCharsets.UTF_8));
+			message.headers().add("X-Correlation-Id", correlationId.getBytes(StandardCharsets.UTF_8));
 		}
-		return kafkaTemplate.send(record);
+		return kafkaTemplate.send(message);
 	}
 }

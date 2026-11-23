@@ -54,7 +54,7 @@ class BookingReservedListener {
 				key, partition, offset, eventId, reason);
 		try {
 			paymentService.recordProcessingFailure(UUID.fromString(key), reason);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException _) {
 			log.error("Cannot determine bookingId from key {}; no FAILED result published", key);
 		}
 	}

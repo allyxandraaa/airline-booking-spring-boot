@@ -19,7 +19,7 @@ class PassengerGatewayImpl implements PassengerGateway {
 	public UUID getPaymentMethodId(UUID passengerId) {
 		try {
 			return passengerClient.getPaymentMethod(passengerId).paymentMethodId();
-		} catch (HttpClientErrorException.NotFound e) {
+		} catch (HttpClientErrorException.NotFound _) {
 			throw new PassengerNotFoundException(passengerId);
 		}
 	}

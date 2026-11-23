@@ -19,6 +19,16 @@ spec:
         runAsUser: 70
         runAsGroup: 70
         fsGroup: 70
+      initContainers:
+        - name: fix-permissions
+          image: postgres:16-alpine
+          command: ["sh", "-c", "chown -R 70:70 /var/lib/postgresql/data"]
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
       containers:
         - name: postgres
           image: postgres:16-alpine
@@ -46,8 +56,10 @@ spec:
             requests:
               cpu: "250m"
               memory: "256Mi"
+              ephemeral-storage: "256Mi"
             limits:
               memory: "512Mi"
+              ephemeral-storage: "1Gi"
       volumes:
         - name: tmp
           emptyDir: {}

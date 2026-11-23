@@ -4,6 +4,7 @@ import com.example.booking_service.booking.BookingDto;
 import com.example.booking_service.booking.BookingStatus;
 import com.example.booking_service.booking.CreateBookingRequest;
 import com.example.booking_service.booking.TicketClass;
+import com.example.booking_service.exception.BookingNotBumpableException;
 import com.example.booking_service.exception.BookingNotFoundException;
 import com.example.booking_service.exception.BookingProcessingException;
 import com.example.booking_service.integration.FlightGateway;
@@ -68,6 +69,72 @@ class BookingServiceTest {
 	}
 
 	@Test
+	void confirmedBookingsOfFlightAreLoadedByFlightAndStatus() {
+		UUID flightId = UUID.randomUUID();
+		Booking confirmed = storedBooking(BookingStatus.CONFIRMED, UUID.randomUUID());
+		when(repository.findByFlightIdAndStatus(flightId, BookingStatus.CONFIRMED)).thenReturn(List.of(confirmed));
+
+		List<BookingDto> result = service.findConfirmedByFlight(flightId);
+
+		assertThat(result).allSatisfy(dto -> assertThat(dto.status()).isEqualTo(BookingStatus.CONFIRMED))
+				.extracting(BookingDto::id).containsExactly(confirmed.getId());
+	}
+
+	@Test
+	void bumpMarksConfirmedBookingAndReleasesItsSeat() {
+		UUID reservationId = UUID.randomUUID();
+		Booking booking = storedBooking(BookingStatus.CONFIRMED, reservationId);
+
+		service.bump(booking.getId());
+
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.BUMPED);
+		verify(flightGateway).releaseSeat(reservationId);
+	}
+
+	@Test
+	void bumpOfAlreadyBumpedBookingStillReleasesSeatSoRetriesAreSafe() {
+		UUID reservationId = UUID.randomUUID();
+		Booking booking = storedBooking(BookingStatus.BUMPED, reservationId);
+
+		service.bump(booking.getId());
+
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.BUMPED);
+		verify(flightGateway).releaseSeat(reservationId);
+	}
+
+	@Test
+	void bumpRejectsBookingThatIsNotConfirmed() {
+		Booking booking = storedBooking(BookingStatus.SEAT_RESERVED, UUID.randomUUID());
+		UUID bookingId = booking.getId();
+
+		assertThatThrownBy(() -> service.bump(bookingId)).isInstanceOf(BookingNotBumpableException.class);
+
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.SEAT_RESERVED);
+		verify(flightGateway, never()).releaseSeat(any());
+	}
+
+	@Test
+	void bumpOfUnknownBookingIsNotFound() {
+		UUID unknownId = UUID.randomUUID();
+
+		assertThatThrownBy(() -> service.bump(unknownId)).isInstanceOf(BookingNotFoundException.class);
+
+		verify(flightGateway, never()).releaseSeat(any());
+	}
+
+	@Test
+	void bumpKeepsBookingBumpedWhenSeatReleaseFails() {
+		UUID reservationId = UUID.randomUUID();
+		Booking booking = storedBooking(BookingStatus.CONFIRMED, reservationId);
+		doThrow(new IllegalStateException("flight is down")).when(flightGateway).releaseSeat(reservationId);
+		UUID bookingId = booking.getId();
+
+		assertThatThrownBy(() -> service.bump(bookingId)).isInstanceOf(IllegalStateException.class);
+
+		assertThat(booking.getStatus()).isEqualTo(BookingStatus.BUMPED);
+	}
+
+	@Test
 	void loadsAllBookingsWithSingleRepositoryCall() {
 		List<UUID> ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 		List<Booking> bookings = ids.stream()
@@ -78,8 +145,8 @@ class BookingServiceTest {
 
 		List<BookingDto> result = service.findByIds(ids);
 
-		assertThat(result).hasSize(3);
-		assertThat(result).allSatisfy(dto -> assertThat(dto.status()).isEqualTo(BookingStatus.CONFIRMED));
+		assertThat(result).hasSize(3)
+				.allSatisfy(dto -> assertThat(dto.status()).isEqualTo(BookingStatus.CONFIRMED));
 		verify(repository, times(1)).findAllById(ids);
 		verify(repository, never()).findById(any());
 	}
@@ -210,6 +277,17 @@ class BookingServiceTest {
 
 	@Test
 	void findByIdThrowsWhenBookingMissing() {
-		assertThatThrownBy(() -> service.findById(UUID.randomUUID())).isInstanceOf(BookingNotFoundException.class);
+		UUID unknownId = UUID.randomUUID();
+
+		assertThatThrownBy(() -> service.findById(unknownId)).isInstanceOf(BookingNotFoundException.class);
+	}
+
+	private Booking storedBooking(BookingStatus status, UUID reservationId) {
+		Booking booking = new Booking(UUID.randomUUID(), UUID.randomUUID(), "Ivan Petrenko", TicketClass.ECONOMY,
+				status, new BigDecimal("100.00"), Instant.now());
+		ReflectionTestUtils.setField(booking, "id", UUID.randomUUID());
+		ReflectionTestUtils.setField(booking, "reservationId", reservationId);
+		store.put(booking.getId(), booking);
+		return booking;
 	}
 }

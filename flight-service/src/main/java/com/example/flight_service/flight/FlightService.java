@@ -12,4 +12,6 @@ public interface FlightService {
 	ReservationDto reserveSeat(UUID flightId, TicketClass ticketClass);
 
 	void releaseSeat(UUID reservationId);
+
+	FlightCapacityDto getCapacity(UUID flightId);
 }

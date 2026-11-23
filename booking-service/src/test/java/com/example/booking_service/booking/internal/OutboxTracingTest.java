@@ -34,7 +34,7 @@ class OutboxTracingTest {
 	void traceparentIsCapturedAndRestoredWithSameTraceId() throws Exception {
 		Span span = tracer.nextSpan().name("http").start();
 		String traceparent;
-		try (Tracer.SpanInScope ignored = tracer.withSpan(span)) {
+		try (var _ = tracer.withSpan(span)) {
 			traceparent = tracing.currentTraceparent();
 		} finally {
 			span.end();

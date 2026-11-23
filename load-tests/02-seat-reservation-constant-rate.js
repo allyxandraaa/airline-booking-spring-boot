@@ -33,7 +33,7 @@ export function setup() {
   return { flightIds };
 }
 
-export default function (data) {
+export default function runScenario(data) {
   const flightId = data.flightIds[Math.floor(Math.random() * data.flightIds.length)];
   const ticketClass = Math.random() < 0.8 ? 'ECONOMY' : 'BUSINESS';
 

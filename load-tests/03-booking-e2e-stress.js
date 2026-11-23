@@ -38,7 +38,7 @@ export function setup() {
   return { flightId, passengers };
 }
 
-export default function (data) {
+export default function runScenario(data) {
   const passenger = data.passengers[Math.floor(Math.random() * data.passengers.length)];
   const ticketClass = Math.random() < 0.8 ? 'ECONOMY' : 'BUSINESS';
 

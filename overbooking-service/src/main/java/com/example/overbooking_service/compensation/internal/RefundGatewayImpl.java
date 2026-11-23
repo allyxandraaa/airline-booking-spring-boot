@@ -98,7 +98,7 @@ class RefundGatewayImpl implements RefundGateway {
 	}
 
 	List<CompensationResult> refundAllFallback(List<RefundOrder> orders, Throwable ex) {
-		log.warn("Refunds deferred: {}", ex.toString());
+		log.warn("Refunds deferred: {}", ex.getMessage());
 		return toResults(orders, ex instanceof RefundStreamFailedException failed ? failed.received : Map.of());
 	}
 

@@ -11,6 +11,7 @@ import com.example.grpc.payment.v1.RefundStatus;
 import com.example.grpc.payment.v1.RefundSummary;
 import com.example.overbooking_service.compensation.CompensationResult;
 import com.example.overbooking_service.grpc.MoneyMapper;
+import com.example.overbooking_service.resolution.OverbookingResolutionService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.grpc.Server;
@@ -27,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -71,6 +73,9 @@ class CompensationGrpcTest {
 		bookingServer.shutdownNow();
 		paymentServer.shutdownNow();
 	}
+
+	@MockitoBean
+	OverbookingResolutionService resolutionService;
 
 	@Autowired
 	MockMvc mockMvc;
@@ -340,6 +345,7 @@ class CompensationGrpcTest {
 			return new StreamObserver<>() {
 				private int total;
 				private int declinedCount;
+				private boolean aborted;
 				private BigDecimal refunded = BigDecimal.ZERO;
 
 				@Override
@@ -358,11 +364,12 @@ class CompensationGrpcTest {
 
 				@Override
 				public void onError(Throwable t) {
+					aborted = true;
 				}
 
 				@Override
 				public void onCompleted() {
-					if (rejected) {
+					if (rejected || aborted) {
 						return;
 					}
 					responseObserver.onNext(RefundSummary.newBuilder()
@@ -410,6 +417,7 @@ class CompensationGrpcTest {
 
 				@Override
 				public void onError(Throwable t) {
+					closed = true;
 				}
 
 				@Override

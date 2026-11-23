@@ -4,6 +4,7 @@ import com.example.flight_service.exception.FlightNotFoundException;
 import com.example.flight_service.exception.ReservationNotFoundException;
 import com.example.flight_service.exception.SeatUnavailableException;
 import com.example.flight_service.flight.CreateFlightRequest;
+import com.example.flight_service.flight.FlightCapacityDto;
 import com.example.flight_service.flight.FlightDto;
 import com.example.flight_service.flight.ReservationDto;
 import com.example.flight_service.flight.TicketClass;
@@ -50,6 +51,23 @@ class FlightServiceTest {
 			ReflectionTestUtils.setField(reservation, "id", UUID.randomUUID());
 			return reservation;
 		});
+	}
+
+	@Test
+	void capacityReturnsPhysicalSeatsWithoutOverbooking() {
+		when(inventoryRepository.findById(flightId)).thenReturn(Optional.of(new Inventory(flightId, 150, 12, 10)));
+
+		FlightCapacityDto capacity = service.getCapacity(flightId);
+
+		assertThat(capacity.seatsEconomy()).isEqualTo(150);
+		assertThat(capacity.seatsBusiness()).isEqualTo(12);
+	}
+
+	@Test
+	void capacityOfUnknownFlightIsNotFound() {
+		when(inventoryRepository.findById(flightId)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getCapacity(flightId)).isInstanceOf(FlightNotFoundException.class);
 	}
 
 	@Test

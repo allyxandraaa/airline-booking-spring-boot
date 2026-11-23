@@ -80,7 +80,7 @@ class PaymentServiceImpl implements PaymentService {
 		failureSimulator.failIfConfigured();
 		try {
 			transactionTemplate.executeWithoutResult(status -> charge(event));
-		} catch (DataIntegrityViolationException e) {
+		} catch (DataIntegrityViolationException _) {
 			log.info("Event {} already processed concurrently: duplicate, skip", event.eventId());
 		}
 	}
@@ -142,7 +142,7 @@ class PaymentServiceImpl implements PaymentService {
 		return response;
 	}
 
-	private RefundResponse readResponse(IdempotencyRecord record) {
-		return jsonMapper.readValue(record.getResponseBody(), RefundResponse.class);
+	private RefundResponse readResponse(IdempotencyRecord stored) {
+		return jsonMapper.readValue(stored.getResponseBody(), RefundResponse.class);
 	}
 }

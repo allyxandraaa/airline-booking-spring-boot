@@ -12,4 +12,5 @@ data:
   PAYMENT_SERVICE_URL: "http://payment-service:8083"
   BOOKING_GRPC_TARGET: "booking-service:9082"
   PAYMENT_GRPC_TARGET: "payment-service:9083"
+  FLIGHT_GRPC_TARGET: "flight-service:9081"
   OTEL_TRACES_ENDPOINT: "http://otel-collector:4318/v1/traces"

@@ -19,7 +19,7 @@ public class ConsumerFailureSimulator {
 	void failIfConfigured() {
 		int attempt = attempts.incrementAndGet();
 		if (attempt <= failuresBeforeSuccess) {
-			throw new TransientPaymentException("Simulated transient failure, attempt " + attempt);
+			throw new TransientPaymentException("Імітована тимчасова помилка, спроба " + attempt);
 		}
 	}
 

@@ -1,9 +1,12 @@
 package com.example.flight_service.grpc;
 
+import com.example.flight_service.flight.FlightCapacityDto;
 import com.example.flight_service.flight.FlightService;
 import com.example.flight_service.flight.ReservationDto;
 import com.example.flight_service.flight.TicketClass;
 import com.example.grpc.flight.v1.FlightServiceGrpc;
+import com.example.grpc.flight.v1.GetFlightCapacityRequest;
+import com.example.grpc.flight.v1.GetFlightCapacityResponse;
 import com.example.grpc.flight.v1.GetPriceRequest;
 import com.example.grpc.flight.v1.GetPriceResponse;
 import com.example.grpc.flight.v1.ReleaseSeatRequest;
@@ -50,10 +53,20 @@ class FlightGrpcService extends FlightServiceGrpc.FlightServiceImplBase {
 		responseObserver.onCompleted();
 	}
 
+	@Override
+	public void getFlightCapacity(GetFlightCapacityRequest request, StreamObserver<GetFlightCapacityResponse> responseObserver) {
+		FlightCapacityDto capacity = flightService.getCapacity(parseId(request.getFlightId()));
+		responseObserver.onNext(GetFlightCapacityResponse.newBuilder()
+				.setSeatsEconomy(capacity.seatsEconomy())
+				.setSeatsBusiness(capacity.seatsBusiness())
+				.build());
+		responseObserver.onCompleted();
+	}
+
 	private static UUID parseId(String value) {
 		try {
 			return UUID.fromString(value);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException _) {
 			throw invalidArgument("Некоректний ідентифікатор: " + value);
 		}
 	}

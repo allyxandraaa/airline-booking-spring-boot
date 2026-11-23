@@ -65,9 +65,9 @@ class PaymentServiceTest {
 		when(idempotencyRepository.findById(anyString()))
 				.thenAnswer(invocation -> Optional.ofNullable(store.get(invocation.<String>getArgument(0))));
 		when(idempotencyRepository.saveAndFlush(any(IdempotencyRecord.class))).thenAnswer(invocation -> {
-			IdempotencyRecord record = invocation.getArgument(0);
-			store.put(record.getId(), record);
-			return record;
+			IdempotencyRecord stored = invocation.getArgument(0);
+			store.put(stored.getId(), stored);
+			return stored;
 		});
 	}
 

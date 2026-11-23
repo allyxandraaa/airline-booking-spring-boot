@@ -26,11 +26,13 @@ class ThrowingController {
 	}
 
 	@PostMapping("/validation")
-	void validation(@Valid @RequestBody Body body) {
+	String validation(@Valid @RequestBody Body body) {
+		return body.name();
 	}
 
 	@GetMapping("/header")
-	void header(@RequestHeader("X-Required") String value) {
+	String header(@RequestHeader("X-Required") String value) {
+		return value;
 	}
 
 	@GetMapping("/boom")

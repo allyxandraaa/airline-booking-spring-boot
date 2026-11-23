@@ -16,10 +16,12 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +107,7 @@ class PaymentPostgresTest {
 			assertThat(payment.getType()).isEqualTo(PaymentType.CHARGE);
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
 		});
-		assertThat(outboxRepository.findTop50ByProcessedFalseOrderByCreatedAt()).hasSize(1);
+		assertThat(pendingOutboxEvents()).hasSize(1);
 		assertThat(processedEventRepository.existsById(event.eventId())).isTrue();
 	}
 
@@ -117,7 +119,7 @@ class PaymentPostgresTest {
 		service.processBookingReserved(event);
 
 		assertThat(paymentRepository.findByBookingId(event.bookingId())).hasSize(1);
-		assertThat(outboxRepository.findTop50ByProcessedFalseOrderByCreatedAt()).hasSize(1);
+		assertThat(pendingOutboxEvents()).hasSize(1);
 		assertThat(processedEventRepository.count()).isEqualTo(1);
 	}
 
@@ -136,5 +138,10 @@ class PaymentPostgresTest {
 		return new PaymentServiceImpl(paymentRepository, idempotencyRepository, processedEventRepository, outboxRepository,
 				new ConsumerFailureSimulator(0), mock(OutboxTracing.class), transactionManager,
 				JsonMapper.builder().build(), new SimpleMeterRegistry(), probability);
+	}
+
+	private List<OutboxEvent> pendingOutboxEvents() {
+		return new TransactionTemplate(transactionManager)
+				.execute(status -> outboxRepository.findTop50ByProcessedFalseOrderByCreatedAt());
 	}
 }
